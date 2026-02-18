@@ -36,21 +36,9 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   useEffect(() => {
     if (!paymentId) return;
 
-    const ref = doc(db, "payments", paymentId);
+    const interval = setInterval(checkPaymentStatus, 3000);
 
-    const unsub = onSnapshot(ref, (snap) => {
-      if (!snap.exists()) return;
-
-      const data = snap.data();
-
-      if (data.status === "approved") {
-        setStep("success");
-
-        onChoose(gift!.id, guestName, message);
-      }
-    });
-
-    return () => unsub();
+    return () => clearInterval(interval);
   }, [paymentId]);
 
   useEffect(() => {
@@ -118,6 +106,17 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       console.error(err);
     } finally {
       setIsCreatingPref(false);
+    }
+  }
+
+  async function checkPaymentStatus() {
+    if (!paymentId) return;
+
+    const res = await fetch(`/api/payments/status?id=${paymentId}`);
+    const data = await res.json();
+
+    if (data.status === "approved") {
+      handlePaymentSuccess();
     }
   }
 
@@ -525,6 +524,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
                 <button onClick={() => navigator.clipboard.writeText(pixCode!)}>
                   Copiar código Pix
+                </button>
+                <button
+                  onClick={checkPaymentStatus}
+                  className="mt-4 bg-terracotta text-white px-4 py-2 rounded"
+                >
+                  Já paguei, verificar pagamento
                 </button>
               </div>
             )}
