@@ -12,14 +12,17 @@ export async function POST(req: NextRequest) {
     const payment = new Payment(client);
 
     const result = await payment.create({
-      body,
+      body: {
+        ...body,
+        payment_method_id: body.payment_method_id || "pix",
+      },
     });
 
     console.log("Payment created:", result.id);
+    console.log("Pix data:", result.point_of_interaction);
 
     return NextResponse.json({
       id: String(result.id),
-      status: result.status,
     });
   } catch (error) {
     console.error(error);
