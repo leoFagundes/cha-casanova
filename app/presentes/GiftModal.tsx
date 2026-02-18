@@ -417,7 +417,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                   ticket: "all", // inclui Pix
                   creditCard: "all",
                   debitCard: "all",
-                  bankTransfer: "all",
+                  bankTransfer: ["pix"],
                   maxInstallments: 3,
                 },
                 visual: {
@@ -432,15 +432,42 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                   },
                 },
               }}
-              onSubmit={async ({ selectedPaymentMethod, formData }) => {
-                // O Brick tokeniza o cartão e chama aqui com os dados prontos
-                // Para Pix, o MP cuida de tudo automaticamente via preferência
-                console.log(
-                  "Payment submitted:",
-                  selectedPaymentMethod,
-                  formData,
-                );
+              onSubmit={async ({ formData }) => {
+                try {
+                  const res = await fetch("/api/payments/create-payment", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      ...formData,
+                      metadata: {
+                        gift_id: gift!.id,
+                        guest_name: guestName,
+                        message,
+                      },
+                    }),
+                  });
+
+                  const data = await res.json();
+
+                  return {
+                    id: data.id,
+                  };
+                } catch (error) {
+                  console.error(error);
+                  throw error;
+                }
               }}
+              // onSubmit={async ({ selectedPaymentMethod, formData }) => {
+              //   // O Brick tokeniza o cartão e chama aqui com os dados prontos
+              //   // Para Pix, o MP cuida de tudo automaticamente via preferência
+              //   console.log(
+              //     "Payment submitted:",
+              //     selectedPaymentMethod,
+              //     formData,
+              //   );
+              // }}
               onError={(error) => {
                 console.error("Payment error:", error);
                 setPaymentError(
