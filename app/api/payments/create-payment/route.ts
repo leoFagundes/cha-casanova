@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log("Payment created:", result.id);
-    console.log("Pix data:", result.point_of_interaction);
+    console.log("result:", result);
 
     return NextResponse.json({
       id: String(result.id),

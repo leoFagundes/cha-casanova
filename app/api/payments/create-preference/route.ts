@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  console.log("Preference Response: ", response);
+
   return NextResponse.json({
     preferenceId: response.id,
     amount,
