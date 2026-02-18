@@ -525,6 +525,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                 <button onClick={() => navigator.clipboard.writeText(pixCode!)}>
                   Copiar código Pix
                 </button>
+
                 <button
                   onClick={checkPaymentStatus}
                   className="mt-4 bg-terracotta text-white px-4 py-2 rounded"
