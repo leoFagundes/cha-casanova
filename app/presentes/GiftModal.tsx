@@ -407,14 +407,14 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             <Payment
               initialization={{
                 amount,
-                preferenceId,
+                // preferenceId,
               }}
               customization={{
                 paymentMethods: {
+                  ticket: "all", // inclui Pix
                   creditCard: "all",
                   debitCard: "all",
-                  ticket: "all",
-                  bankTransfer: "all",
+                  maxInstallments: 3,
                 },
                 visual: {
                   style: {

@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({
+    preferenceId: response.id,
     amount,
   });
 }
