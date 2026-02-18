@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import type { PublicGift } from "./gifts.public";
 import { getStatus } from "./gifts.public";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase"; // seu client firebase
 
 // Inicializa o SDK do MP uma vez
 initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: "pt-BR" });
@@ -27,6 +29,29 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   const [amount, setAmount] = useState<number>(0);
   const [isCreatingPref, setIsCreatingPref] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [pixQrCode, setPixQrCode] = useState<string | null>(null);
+  const [pixCode, setPixCode] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!paymentId) return;
+
+    const ref = doc(db, "payments", paymentId);
+
+    const unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+
+      if (data.status === "approved") {
+        setStep("success");
+
+        onChoose(gift!.id, guestName, message);
+      }
+    });
+
+    return () => unsub();
+  }, [paymentId]);
 
   useEffect(() => {
     if (gift) {
@@ -90,6 +115,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       setStep("payment");
     } catch (err) {
       setPaymentError("Não foi possível iniciar o pagamento. Tente novamente.");
+      console.error(err);
     } finally {
       setIsCreatingPref(false);
     }
@@ -356,7 +382,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
         )}
 
         {/* ── PAGAMENTO (Brick) ── */}
-        {step === "payment" && preferenceId && (
+        {step === "payment" && amount > 0 && (
           <div className="p-7">
             <button
               onClick={() => setStep("form")}
@@ -438,10 +464,27 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                   headers: {
                     "Content-Type": "application/json",
                   },
-                  body: JSON.stringify(formData),
+                  body: JSON.stringify({
+                    ...formData,
+                    transaction_amount: amount,
+                    description: gift!.name,
+                    payment_method_id: "pix",
+                    payer: {
+                      email: guestEmail,
+                    },
+                    metadata: {
+                      gift_id: gift!.id,
+                      guest_name: guestName,
+                      message,
+                    },
+                  }),
                 });
 
                 const data = await res.json();
+
+                setPaymentId(data.id);
+                setPixQrCode(data.qr_code_base64);
+                setPixCode(data.qr_code);
 
                 return {
                   id: data.id,
@@ -466,6 +509,25 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                 // Brick carregou — pode esconder um spinner se tiver
               }}
             />
+
+            {pixQrCode && (
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <img
+                  src={`data:image/png;base64,${pixQrCode}`}
+                  className="w-64 h-64"
+                />
+
+                <textarea
+                  value={pixCode || ""}
+                  readOnly
+                  className="w-full text-xs p-2 border rounded"
+                />
+
+                <button onClick={() => navigator.clipboard.writeText(pixCode!)}>
+                  Copiar código Pix
+                </button>
+              </div>
+            )}
 
             <p className="text-center text-[0.7rem] font-light text-brand-text-light/50 mt-4 flex items-center justify-center gap-1.5">
               <svg

@@ -23,6 +23,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       id: String(result.id),
+      qr_code: result.point_of_interaction?.transaction_data?.qr_code,
+      qr_code_base64:
+        result.point_of_interaction?.transaction_data?.qr_code_base64,
+      ticket_url: result.point_of_interaction?.transaction_data?.ticket_url,
     });
   } catch (error) {
     console.error(error);
