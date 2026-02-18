@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { paymentAPI } from "@/lib/mercadopago";
-import { adminDb } from "@/lib/firebase-admin";
+import { paymentAPI } from "../../../../lib/mercadopago";
+import { adminDb } from "../../../../lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: NextRequest) {
