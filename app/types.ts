@@ -8,12 +8,7 @@ export interface GiftContribution {
   createdAt: string;
 }
 
-export interface Gift {
-  /**
-   * ID do documento Firestore
-   */
-  id: string;
-
+export interface GiftBase {
   name: string;
 
   cat: string;
@@ -36,3 +31,9 @@ export interface Gift {
 
   contributions: GiftContribution[];
 }
+
+export interface Gift extends GiftBase {
+  id: string;
+}
+
+export type GiftCreate = GiftBase;

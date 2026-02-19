@@ -8,19 +8,30 @@ export interface ToastData {
   type: "success" | "error";
 }
 
-export default function Toast({ toast, onRemove }: { toast: ToastData; onRemove: (id: number) => void }) {
+export default function Toast({
+  toast,
+  onRemove,
+}: {
+  toast: ToastData;
+  onRemove: (id: number) => void;
+}) {
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     const t1 = setTimeout(() => setLeaving(true), 2700);
     const t2 = setTimeout(() => onRemove(toast.id), 3100);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [toast.id, onRemove]);
 
   return (
     <div
       className={`flex items-center gap-3 bg-brand-dark text-white/90 text-[0.82rem] font-light tracking-wide px-5 py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)] min-w-[240px] transition-all duration-300 ${
-        leaving ? "opacity-0 translate-y-2 scale-95" : "opacity-100 translate-y-0 scale-100"
+        leaving
+          ? "opacity-0 translate-y-2 scale-95"
+          : "opacity-100 translate-y-0 scale-100"
       }`}
       style={{ animation: "toastIn .35s ease" }}
     >

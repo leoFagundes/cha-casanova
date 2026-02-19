@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift } from "@/app/types";
+import { Gift, GiftCreate } from "@/app/types";
 import GiftRepository from "@/services/repositories/GiftRepository";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -67,7 +67,7 @@ export default function GiftForm() {
       return;
     }
 
-    const gift: Gift = {
+    const gift: GiftCreate = {
       name,
       desc,
       cat: category,
@@ -79,7 +79,6 @@ export default function GiftForm() {
       link,
       imageUrl,
       contributions: [],
-      id: "",
     };
 
     const id = await GiftRepository.create(gift);
