@@ -52,7 +52,7 @@ export default function DonorsWall({ gifts }: { gifts: Gift[] }) {
                   </p>
                   {d.createdAt && (
                     <span className="text-[0.65rem] font-light text-brand-text-light/60 shrink-0">
-                      {formatDate(d.createdAt)}
+                      {formatDate(d.createdAt.toString())}
                     </span>
                   )}
                 </div>
