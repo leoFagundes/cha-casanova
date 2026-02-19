@@ -1,5 +1,6 @@
 import { Gift } from "@/app/types";
 import { prioClass, prioLabel } from "./gifts.data";
+import { getStatus } from "@/app/presentes/gifts.public";
 
 interface GiftCardProps {
   gift: Gift;
@@ -14,7 +15,12 @@ export default function GiftCard({
   onEdit,
   onDelete,
 }: GiftCardProps) {
-  const isTaken = g.taken >= g.qty;
+  const taken = g.contributions?.length ?? 0;
+
+  const status = getStatus(g);
+
+  const isTaken = status === "doado";
+
   const pct = g.qty > 0 ? Math.round((g.taken / g.qty) * 100) : 0;
 
   const ImageBlock = (
@@ -99,7 +105,7 @@ export default function GiftCard({
         {/* Progress */}
         <div className="mt-2.5">
           <p className="text-[0.7rem] font-light text-brand-text-light mb-1">
-            {g.taken} de {g.qty} escolhido{g.qty > 1 ? "s" : ""}
+            {taken} de {g.qty} escolhido{g.qty > 1 ? "s" : ""}
           </p>
           <div className="h-[3px] bg-blush/30 rounded-full overflow-hidden">
             <div

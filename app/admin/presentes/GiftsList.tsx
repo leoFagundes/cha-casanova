@@ -10,7 +10,6 @@ import DeleteModal from "./DeleteModal";
 import Toast, { type ToastData } from "./Toast";
 import GiftRepository from "@/services/repositories/GiftRepository";
 import { Gift } from "@/app/types";
-import PaymentRepository from "@/services/repositories/PaymentRepositoriy";
 
 type ViewMode = "grid" | "list";
 
@@ -29,32 +28,19 @@ export default function GiftsList() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [giftsData, paymentsData] = await Promise.all([
-          GiftRepository.getAll(),
-          PaymentRepository.getAll(),
-        ]);
+        const giftsData = await GiftRepository.getAll();
 
-        const giftsWithPayments: Gift[] = giftsData.map((gift) => {
-          const giftPayments = paymentsData.filter((p) => p.giftId === gift.id);
+        const normalized: Gift[] = giftsData.map((gift) => ({
+          ...gift,
 
-          return {
-            ...gift,
+          // garante que contributions sempre existe
+          contributions: gift.contributions ?? [],
 
-            taken: giftPayments.length,
+          // taken vem do próprio gift, ou recalcula por segurança
+          taken: gift.contributions?.length ?? gift.taken ?? 0,
+        }));
 
-            contributions: giftPayments.map((p) => ({
-              name: p.guestName,
-              email: "",
-              message: p.message,
-              paymentId: p.id,
-              createdAt:
-                p.createdAt?.toDate?.()?.toISOString?.() ??
-                new Date().toISOString(),
-            })),
-          };
-        });
-
-        setGifts(giftsWithPayments);
+        setGifts(normalized);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       } finally {
