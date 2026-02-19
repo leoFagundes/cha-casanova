@@ -584,16 +584,14 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                      ...formData, // já contém payment_method_id correto
+                      ...formData, // contém payment_method_id, token, installments
 
                       transaction_amount: amount,
                       description: gift!.name,
 
-                      installments: formData.installments,
-
                       payer: {
-                        // email: guestEmail,
                         ...formData.payer,
+                        email: guestEmail,
                       },
 
                       metadata: {
@@ -606,9 +604,18 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
                   const data = await res.json();
 
+                  // ✅ CORREÇÃO 3: cartão de crédito aprovado na hora retorna
+                  // status "approved" diretamente — não há QR Code nem polling.
+                  // Nesse caso vamos direto para a tela de sucesso.
+                  if (data.status === "approved") {
+                    handlePaymentSuccess();
+                    return { id: data.id };
+                  }
+
+                  // Pix: guarda o id para polling e exibe o QR Code
                   setPaymentId(data.id);
-                  setPixQrCode(data.qr_code_base64);
-                  setPixCode(data.qr_code);
+                  setPixQrCode(data.qr_code_base64 ?? null);
+                  setPixCode(data.qr_code ?? null);
 
                   return { id: data.id };
                 }}

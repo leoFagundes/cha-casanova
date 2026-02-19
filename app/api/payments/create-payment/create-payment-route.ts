@@ -42,14 +42,10 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(
-      "Payment created:",
-      result.id,
-      "| method:",
-      result.payment_method_id,
-      "| installments:",
-      result.installments,
-      "| status:",
-      result.status,
+      "Payment created:", result.id,
+      "| method:", result.payment_method_id,
+      "| installments:", result.installments,
+      "| status:", result.status,
     );
 
     return NextResponse.json({
@@ -58,11 +54,9 @@ export async function POST(req: NextRequest) {
       // O GiftModal usa isso para ir direto para a tela de sucesso.
       status: result.status,
       // Campos Pix — null para cartão
-      qr_code: result.point_of_interaction?.transaction_data?.qr_code ?? null,
-      qr_code_base64:
-        result.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
-      ticket_url:
-        result.point_of_interaction?.transaction_data?.ticket_url ?? null,
+      qr_code:        result.point_of_interaction?.transaction_data?.qr_code        ?? null,
+      qr_code_base64: result.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
+      ticket_url:     result.point_of_interaction?.transaction_data?.ticket_url      ?? null,
     });
   } catch (error) {
     console.error("create-payment error:", error);
