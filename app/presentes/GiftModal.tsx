@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
-import type { Gift } from "@/app/types";
+import type { Gift, GiftContribution } from "@/app/types";
 import { getStatus, makeAvatar, formatDate } from "./gifts.public";
+import GiftRepository from "@/services/repositories/GiftRepository";
 
 // Inicializa o SDK do MP uma vez
 initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: "pt-BR" });
@@ -163,10 +164,19 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   }
 
   // ── Confirma pagamento e avança para sucesso ───────────────────────────────
-  function handlePaymentSuccess() {
+  async function handlePaymentSuccess() {
     if (paymentApproved) return;
     setPaymentApproved(true);
     onChoose(gift!.id, guestName, message);
+    const contribution: GiftContribution = {
+      name: guestName,
+      email: guestEmail ?? "",
+      message: message ?? "",
+      paymentId: paymentId ?? "",
+      createdAt: new Date().toISOString(),
+    };
+
+    await GiftRepository.addContribution(gift!.id, contribution);
     setStep("success");
   }
 

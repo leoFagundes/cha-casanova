@@ -19,12 +19,8 @@ export async function POST(req: NextRequest) {
         description: body.description,
         payment_method_id: body.payment_method_id,
 
-        // ✅ CORREÇÃO 1: token é obrigatório para cartão de crédito/débito.
-        // O Brick gera o token e envia via formData. Sem ele, o MP rejeita
-        // o pagamento com cartão e o parcelamento não funciona.
         ...(body.token && { token: body.token }),
 
-        // Pix não aceita installments — somente cartão
         installments: isPix ? 1 : (body.installments ?? 1),
 
         payer: body.payer,
