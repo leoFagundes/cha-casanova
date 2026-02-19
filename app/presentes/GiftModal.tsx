@@ -577,7 +577,8 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                     creditCard: "all",
                     // debitCard: "all",
                     bankTransfer: ["pix"],
-                    maxInstallments: 10,
+                    minInstallments: 1,
+                    maxInstallments: 5,
                   },
                   visual: {
                     style: {
