@@ -1,23 +1,28 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import type { Gift } from "@/app/types";
 import {
-  PUBLIC_GIFTS,
   CAT_FILTERS,
   STATUS_FILTERS,
   getStatus,
-  type PublicGift,
+  makeAvatar,
 } from "./gifts.public";
 import PublicGiftCard from "./PublicGiftCard";
 import GiftModal from "./GiftModal";
 import DonorsWall from "./DonorsWall";
 
-export default function PresentesList() {
-  const [gifts, setGifts] = useState<PublicGift[]>(PUBLIC_GIFTS);
+interface PresentesListProps {
+  // Dados reais vindos do Server Component (page.tsx)
+  initialGifts: Gift[];
+}
+
+export default function PresentesList({ initialGifts }: PresentesListProps) {
+  const [gifts, setGifts] = useState<Gift[]>(initialGifts);
   const [catFilter, setCatFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<PublicGift | null>(null);
+  const [selected, setSelected] = useState<Gift | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const filtered = gifts.filter((g) => {
@@ -38,37 +43,31 @@ export default function PresentesList() {
   const available = gifts.filter((g) => getStatus(g) !== "doado").length;
   const chosen = gifts.filter((g) => getStatus(g) === "doado").length;
 
+  // Chamado pelo GiftModal após pagamento aprovado.
+  // giftId agora é string (ID do Firestore).
+  // Atualiza o estado local otimisticamente — o Firebase já foi gravado pelo webhook.
   const handleChoose = useCallback(
-    (giftId: number, name: string, message: string) => {
+    (giftId: string, name: string, message: string) => {
       setGifts((prev) =>
         prev.map((g) => {
           if (g.id !== giftId) return g;
-          const initials = name
-            .split(" ")
-            .slice(0, 2)
-            .map((w) => w[0]?.toUpperCase() ?? "")
-            .join("");
           return {
             ...g,
             taken: g.taken + 1,
-            donors: [
-              ...g.donors,
+            contributions: [
+              ...g.contributions,
               {
                 name,
-                message,
-                avatar: initials,
-                date: new Date().toLocaleDateString("pt-BR", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                }),
+                email: "",
+                message: message || undefined,
+                paymentId: "pending", // será substituído pelo webhook
+                createdAt: new Date().toISOString(),
               },
             ],
           };
         }),
       );
 
-      // Show success toast
       const giftName = gifts.find((g) => g.id === giftId)?.name ?? "";
       setToast(`${name} escolheu "${giftName}" ♡`);
       setTimeout(() => setToast(null), 4000);
@@ -186,7 +185,7 @@ export default function PresentesList() {
 
         {/* Bottom note */}
         <p className="text-center text-[0.72rem] font-light text-brand-text-light/50 mt-12 tracking-wide pb-8">
-          Chá de Panela · Natália &amp; Leonardo · Junho 2025
+          Chá de Casa Nova · Natália &amp; Leonardo
         </p>
       </div>
 

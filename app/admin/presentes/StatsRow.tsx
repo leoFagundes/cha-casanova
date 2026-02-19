@@ -1,4 +1,4 @@
-import type { Gift } from "./gifts.data";
+import { Gift } from "@/app/types";
 
 export default function StatsRow({ gifts }: { gifts: Gift[] }) {
   const total = gifts.length;
@@ -7,10 +7,20 @@ export default function StatsRow({ gifts }: { gifts: Gift[] }) {
   const highPrio = gifts.filter((g) => g.prioridade === "alta").length;
 
   const stats = [
-    { icon: "🎁", num: total, label: "Total de itens", accent: "bg-terracotta/10" },
-    { icon: "✅", num: avail, label: "Disponíveis",    accent: "bg-sage/12" },
-    { icon: "💝", num: taken, label: "Escolhidos",     accent: "bg-rose/12" },
-    { icon: "⭐", num: highPrio, label: "Alta prioridade", accent: "bg-gold/12" },
+    {
+      icon: "🎁",
+      num: total,
+      label: "Total de itens",
+      accent: "bg-terracotta/10",
+    },
+    { icon: "✅", num: avail, label: "Disponíveis", accent: "bg-sage/12" },
+    { icon: "💝", num: taken, label: "Escolhidos", accent: "bg-rose/12" },
+    {
+      icon: "⭐",
+      num: highPrio,
+      label: "Alta prioridade",
+      accent: "bg-gold/12",
+    },
   ];
 
   return (
@@ -20,7 +30,9 @@ export default function StatsRow({ gifts }: { gifts: Gift[] }) {
           key={s.label}
           className="bg-warm-white rounded-2xl px-4 py-4 border border-blush/25 flex items-center gap-3"
         >
-          <div className={`w-11 h-11 rounded-xl ${s.accent} grid place-items-center text-lg shrink-0`}>
+          <div
+            className={`w-11 h-11 rounded-xl ${s.accent} grid place-items-center text-lg shrink-0`}
+          >
             {s.icon}
           </div>
           <div>

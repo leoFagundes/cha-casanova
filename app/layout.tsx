@@ -18,9 +18,9 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: "Chá de Panela — Ana & Lucas",
+  title: "Chá de Panela — Natália & Leonardo",
   description:
-    "Celebre conosco! Escolha um presente especial para o lar de Ana e Lucas.",
+    "Celebre conosco! Escolha um presente especial para o lar de Natália e Leonardo.",
 };
 
 export default function RootLayout({

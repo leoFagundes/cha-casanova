@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PresentesList from "./PresentesList";
+import GiftRepository from "@/services/repositories/GiftRepository";
 
 export const metadata: Metadata = {
   title: "Lista de Presentes — Natália & Leonardo",
@@ -8,7 +9,13 @@ export const metadata: Metadata = {
     "Escolha um presente especial para o novo lar de Natália e Leonardo.",
 };
 
-export default function PresentesPage() {
+// Revalida a cada 60s. Quando o webhook gravar no Firebase,
+// em até 1 minuto a página já reflete o estado atualizado.
+export const revalidate = 60;
+
+export default async function PresentesPage() {
+  const gifts = await GiftRepository.getAll();
+
   return (
     <div className="min-h-screen bg-cream relative overflow-x-hidden">
       {/* Background blobs */}
@@ -178,8 +185,8 @@ export default function PresentesPage() {
         <div className="h-px bg-gradient-to-r from-transparent via-blush/40 to-transparent" />
       </div>
 
-      {/* ── LIST (client component with all interactive logic) ── */}
-      <PresentesList />
+      {/* Passa os dados reais do Firebase via prop */}
+      <PresentesList initialGifts={gifts} />
 
       {/* Keyframes */}
       <style>{`

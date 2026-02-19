@@ -1,8 +1,14 @@
-import type { PublicGift } from "./gifts.public";
+import type { Gift } from "@/app/types";
+import { makeAvatar, formatDate } from "./gifts.public";
 
-export default function DonorsWall({ gifts }: { gifts: PublicGift[] }) {
+export default function DonorsWall({ gifts }: { gifts: Gift[] }) {
+  // Achata contributions de todos os presentes em uma lista única
   const allDonors = gifts.flatMap((g) =>
-    g.donors.map((d) => ({ ...d, giftName: g.name, giftEmoji: g.emoji }))
+    (g.contributions ?? []).map((c) => ({
+      ...c,
+      giftName: g.name,
+      giftEmoji: g.emoji,
+    })),
   );
 
   if (allDonors.length === 0) return null;
@@ -34,15 +40,21 @@ export default function DonorsWall({ gifts }: { gifts: PublicGift[] }) {
             className="bg-warm-white rounded-2xl p-5 border border-blush/25 hover:border-rose/20 transition-all hover:shadow-[0_8px_30px_rgba(74,48,40,0.07)]"
           >
             <div className="flex items-start gap-3">
-              {/* Avatar */}
+              {/* Avatar com iniciais geradas dinamicamente */}
               <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blush to-rose flex items-center justify-center text-white text-[0.75rem] font-medium shrink-0 shadow-[0_4px_12px_rgba(201,134,109,0.3)]">
-                {d.avatar}
+                {makeAvatar(d.name)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[0.85rem] font-medium text-brand-dark leading-tight">{d.name}</p>
-                  <span className="text-[0.65rem] font-light text-brand-text-light/60 shrink-0">{d.date}</span>
+                  <p className="text-[0.85rem] font-medium text-brand-dark leading-tight">
+                    {d.name}
+                  </p>
+                  {d.createdAt && (
+                    <span className="text-[0.65rem] font-light text-brand-text-light/60 shrink-0">
+                      {formatDate(d.createdAt)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Gift chip */}

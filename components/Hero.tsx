@@ -45,7 +45,7 @@ export default function Hero() {
         </div>
 
         {/* Subtitle */}
-        <p className="font-cormorant italic font-light text-text-light mt-7 mb-11 leading-relaxed opacity-0 animate-fadeUp animation-delay-750 animation-fill-forwards">
+        <p className="font-cormorant italic font-light text-text-light my-7 leading-relaxed opacity-0 animate-fadeUp animation-delay-750 animation-fill-forwards">
           "Ficamos muito felizes em ter você com a gente.
           <br />
           Obrigado por celebrar esse novo capítulo ao nosso lado."
@@ -53,13 +53,13 @@ export default function Hero() {
 
         {/* CTA buttons */}
         <div className="flex flex-wrap gap-4 justify-center opacity-0 animate-fadeUp animation-delay-1000 animation-fill-forwards">
-          <a
+          {/* <a
             href="/presentes"
             className="inline-flex items-center gap-2 bg-terracotta text-white text-[0.8rem] font-medium tracking-[0.16em] uppercase px-9 py-4 rounded-full transition-all duration-300 shadow-[0_8px_30px_rgba(139,74,53,0.25)] hover:bg-deep-rose hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(139,74,53,0.35)] group"
           >
             Ver Lista de Presentes
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </a>
+          </a> */}
           <a
             href="#sobre"
             className="inline-flex items-center gap-2 text-text-light text-[0.8rem] font-light tracking-[0.14em] uppercase px-7 py-4 rounded-full border border-text-main/20 hover:border-rose hover:text-rose transition-all duration-300"

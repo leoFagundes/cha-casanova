@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Gift } from "@/app/types";
+import GiftRepository from "@/services/repositories/GiftRepository";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 
 type Category =
   | ""
@@ -31,17 +34,16 @@ const PRIORITY = [
 export default function GiftForm() {
   const [category, setCategory] = useState<Category>("");
   const [priority, setPriority] = useState("media");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [price, setPrice] = useState("");
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [qty, setQty] = useState(1);
+  const [link, setLink] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [categoryRequired, setCategoryRequired] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  };
+  const route = useRouter();
 
   const formatPrice = (value: string) => {
     const digits = value.replace(/\D/g, "");
@@ -55,6 +57,38 @@ export default function GiftForm() {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrice(formatPrice(e.target.value));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!category) {
+      setCategoryRequired(true);
+      return;
+    }
+
+    const gift: Gift = {
+      name,
+      desc,
+      cat: category,
+      emoji: CATEGORIES.find((c) => c.value === category)?.emoji || "🎁",
+      price,
+      prioridade: priority as "alta" | "media" | "baixa",
+      qty,
+      taken: 0,
+      link,
+      imageUrl,
+      contributions: [],
+      id: "",
+    };
+
+    const id = await GiftRepository.create(gift);
+
+    if (id) {
+      setSubmitted(true);
+    } else {
+      alert("Erro ao salvar presente");
+    }
   };
 
   if (submitted) {
@@ -85,33 +119,32 @@ export default function GiftForm() {
           <button
             onClick={() => {
               setSubmitted(false);
-              setImagePreview(null);
+              setName("");
+              setDesc("");
               setPrice("");
               setCategory("");
+              setPriority("media");
+              setQty(1);
+              setLink("");
+              setImageUrl("");
             }}
             className="inline-flex items-center gap-2 bg-terracotta text-white text-[0.78rem] font-medium tracking-[0.14em] uppercase px-7 py-3.5 rounded-full hover:bg-rose-deep transition-all hover:-translate-y-0.5 shadow-[0_6px_20px_rgba(139,74,53,0.25)]"
           >
             + Cadastrar outro
           </button>
-          <a
-            href="/"
+          <button
+            onClick={() => route.back()}
             className="inline-flex items-center gap-2 text-brand-text-light text-[0.78rem] font-light tracking-[0.14em] uppercase px-7 py-3.5 rounded-full border border-blush hover:border-rose hover:text-rose transition-all"
           >
-            Ver site
-          </a>
+            Ver presentes
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSubmitted(true);
-      }}
-      className="space-y-10"
-    >
+    <form onSubmit={async (e) => handleSubmit(e)} className="space-y-10">
       {/* ── SECTION: Informações Básicas ── */}
       <FormSection
         number="01"
@@ -123,6 +156,8 @@ export default function GiftForm() {
           <FieldLabel required>Nome do presente</FieldLabel>
           <input
             type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
             placeholder="Ex: Jogo de panelas tramontina 5 peças"
             className={inputClass}
@@ -130,14 +165,24 @@ export default function GiftForm() {
         </div>
 
         {/* Category */}
-        <div className="md:col-span-2">
+        <div
+          className={`md:col-span-2 ${categoryRequired && "border border-rose rounded-md p-2"}`}
+        >
           <FieldLabel required>Categoria</FieldLabel>
+          {categoryRequired && (
+            <span className="text-rose italic text-sm">
+              Escolha uma categoria.
+            </span>
+          )}
           <div className="flex flex-wrap gap-2.5">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
                 type="button"
-                onClick={() => setCategory(cat.value)}
+                onClick={() => {
+                  setCategory(cat.value);
+                  setCategoryRequired(false);
+                }}
                 className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-light transition-all duration-200 ${
                   category === cat.value
                     ? "border-rose bg-rose/8 text-rose shadow-[0_0_0_3px_rgba(201,134,109,0.12)]"
@@ -156,6 +201,8 @@ export default function GiftForm() {
           <FieldLabel>Descrição</FieldLabel>
           <textarea
             rows={3}
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
             placeholder="Descreva o presente brevemente para os convidados…"
             className={`${inputClass} resize-none`}
           />
@@ -214,6 +261,8 @@ export default function GiftForm() {
           <FieldLabel>Quantidade disponível</FieldLabel>
           <input
             type="number"
+            value={qty}
+            onChange={(e) => setQty(Number(e.target.value))}
             min={1}
             defaultValue={1}
             className={inputClass}
@@ -242,6 +291,8 @@ export default function GiftForm() {
               </svg>
             </span>
             <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
               type="url"
               placeholder="https://…"
               className={`${inputClass} pl-10`}
@@ -256,73 +307,6 @@ export default function GiftForm() {
         title="Imagem do presente"
         subtitle="Uma foto bonita para exibir na lista"
       >
-        <div className="md:col-span-2">
-          <FieldLabel>Foto do presente</FieldLabel>
-
-          {imagePreview ? (
-            <div
-              className="relative group w-full rounded-2xl overflow-hidden border border-blush/40 shadow-[0_4px_20px_rgba(74,48,40,0.08)]"
-              style={{ aspectRatio: "16/7" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => setImagePreview(null)}
-                  className="text-white text-[0.75rem] tracking-[0.15em] uppercase font-medium border border-white/50 rounded-full px-5 py-2.5 hover:bg-white/10 transition-colors"
-                >
-                  Trocar imagem
-                </button>
-              </div>
-            </div>
-          ) : (
-            <label
-              className="flex flex-col items-center justify-center w-full rounded-2xl border-2 border-dashed border-blush/60 bg-warm-white hover:border-rose/50 hover:bg-cream transition-all duration-300 cursor-pointer group"
-              style={{ aspectRatio: "16/7" }}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                onChange={handleImageChange}
-              />
-              <div className="flex flex-col items-center gap-3 text-center px-4">
-                <div className="w-12 h-12 rounded-2xl bg-cream group-hover:bg-blush/30 transition-colors grid place-items-center">
-                  <svg
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#c9866d"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="3" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="M21 15l-5-5L5 21" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-[0.85rem] font-light text-brand-text-light">
-                    <span className="text-rose font-normal">
-                      Clique para enviar
-                    </span>{" "}
-                    ou arraste aqui
-                  </p>
-                  <p className="text-[0.72rem] text-brand-text-light/60 mt-0.5">
-                    PNG, JPG, WEBP — até 5MB
-                  </p>
-                </div>
-              </div>
-            </label>
-          )}
-        </div>
-
         {/* Image URL alternative */}
         <div className="md:col-span-2">
           <FieldLabel>Ou cole uma URL de imagem</FieldLabel>
@@ -344,18 +328,17 @@ export default function GiftForm() {
             </span>
             <input
               type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://…/imagem.jpg"
               className={`${inputClass} pl-10`}
-              onChange={(e) => {
-                if (e.target.value) setImagePreview(e.target.value);
-              }}
             />
           </div>
         </div>
       </FormSection>
 
       {/* ── SECTION: Observações ── */}
-      <FormSection
+      {/* <FormSection
         number="04"
         title="Observações"
         subtitle="Notas internas ou mensagem para o convidado"
@@ -376,7 +359,7 @@ export default function GiftForm() {
             className={`${inputClass} resize-none`}
           />
         </div>
-      </FormSection>
+      </FormSection> */}
 
       {/* ── SUBMIT ── */}
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-blush/30">
@@ -385,6 +368,7 @@ export default function GiftForm() {
         </p>
         <div className="flex gap-3 flex-wrap justify-center">
           <button
+            onClick={() => route.back()}
             type="button"
             className="text-[0.78rem] font-light tracking-[0.14em] uppercase px-6 py-3.5 rounded-full border border-blush text-brand-text-light hover:border-rose hover:text-rose transition-all"
           >

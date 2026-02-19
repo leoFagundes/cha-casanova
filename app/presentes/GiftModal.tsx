@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
-import type { PublicGift } from "./gifts.public";
-import { getStatus } from "./gifts.public";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase"; // seu client firebase
+import type { Gift } from "@/app/types";
+import { getStatus, makeAvatar, formatDate } from "./gifts.public";
 
 // Inicializa o SDK do MP uma vez
 initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: "pt-BR" });
@@ -13,9 +11,10 @@ initMercadoPago(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY!, { locale: "pt-BR" });
 type Step = "detail" | "form" | "payment" | "success";
 
 interface GiftModalProps {
-  gift: PublicGift | null;
+  gift: Gift | null;
   onClose: () => void;
-  onChoose: (giftId: number, name: string, message: string) => void;
+  // giftId agora é string (ID do Firestore)
+  onChoose: (giftId: string, name: string, message: string) => void;
 }
 
 export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
@@ -32,15 +31,20 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   const [pixQrCode, setPixQrCode] = useState<string | null>(null);
   const [pixCode, setPixCode] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [paymentApproved, setPaymentApproved] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [checkState, setCheckState] = useState<
+    "idle" | "checking" | "approved" | "pending" | "error"
+  >("idle");
 
+  // Polling automático a cada 3s enquanto aguarda pagamento Pix
   useEffect(() => {
-    if (!paymentId) return;
-
-    const interval = setInterval(checkPaymentStatus, 3000);
-
+    if (!paymentId || paymentApproved) return;
+    const interval = setInterval(autoCheckPaymentStatus, 3000);
     return () => clearInterval(interval);
-  }, [paymentId]);
+  }, [paymentId, paymentApproved]);
 
+  // Reset completo ao abrir um novo presente
   useEffect(() => {
     if (gift) {
       setStep("detail");
@@ -51,6 +55,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       setEmailErr(false);
       setPreferenceId(null);
       setPaymentError(null);
+      setPixQrCode(null);
+      setPixCode(null);
+      setPaymentId(null);
+      setPaymentApproved(false);
+      setCopied(false);
+      setCheckState("idle");
     }
   }, [gift]);
 
@@ -66,8 +76,10 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
   const status = getStatus(gift);
   const isFull = status === "doado";
+  const remaining = gift.qty - gift.taken;
+  const contributors = gift.contributions ?? [];
 
-  // ── Valida o formulário e cria a preferência de pagamento ──
+  // ── Valida o formulário e cria a preferência de pagamento ──────────────────
   async function handleGoToPayment() {
     let hasError = false;
     if (!guestName.trim()) {
@@ -80,9 +92,10 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     }
     if (hasError) return;
 
+    if (!gift) return;
+
     setIsCreatingPref(true);
     try {
-      if (!gift) return;
       const res = await fetch("/api/payments/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,19 +122,50 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     }
   }
 
+  // ── Copia o código Pix para o clipboard ────────────────────────────────────
+  function handleCopyPix() {
+    if (!pixCode) return;
+    navigator.clipboard.writeText(pixCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  // ── Polling silencioso (chamado pelo interval) ─────────────────────────────
+  async function autoCheckPaymentStatus() {
+    if (!paymentId || paymentApproved) return;
+    try {
+      const res = await fetch(`/api/payments/status?id=${paymentId}`);
+      const data = await res.json();
+      if (data.status === "approved") {
+        handlePaymentSuccess();
+      }
+    } catch {}
+  }
+
+  // ── Verificação manual (botão "Já paguei") ─────────────────────────────────
   async function checkPaymentStatus() {
-    if (!paymentId) return;
-
-    const res = await fetch(`/api/payments/status?id=${paymentId}`);
-    const data = await res.json();
-
-    if (data.status === "approved") {
-      handlePaymentSuccess();
+    if (!paymentId || paymentApproved || checkState === "checking") return;
+    setCheckState("checking");
+    try {
+      const res = await fetch(`/api/payments/status?id=${paymentId}`);
+      const data = await res.json();
+      if (data.status === "approved") {
+        setCheckState("approved");
+        handlePaymentSuccess();
+      } else {
+        setCheckState("pending");
+        setTimeout(() => setCheckState("idle"), 2000);
+      }
+    } catch {
+      setCheckState("error");
+      setTimeout(() => setCheckState("idle"), 2000);
     }
   }
 
-  // ── Chamado pelo Brick quando o pagamento é aprovado ──
+  // ── Confirma pagamento e avança para sucesso ───────────────────────────────
   function handlePaymentSuccess() {
+    if (paymentApproved) return;
+    setPaymentApproved(true);
     onChoose(gift!.id, guestName, message);
     setStep("success");
   }
@@ -158,13 +202,27 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
         {/* ── DETALHE ── */}
         {step === "detail" && (
           <>
-            <div className="relative w-full aspect-[16/8] bg-gradient-to-br from-gold-light via-blush to-rose/40 flex items-center justify-center overflow-hidden">
-              <span
-                className="text-[6rem]"
-                style={{ filter: "drop-shadow(0 8px 20px rgba(74,48,40,0.2))" }}
-              >
-                {gift.emoji}
-              </span>
+            {/* Hero: imagem real ou emoji */}
+            <div className="relative w-full aspect-[16/8] overflow-hidden">
+              {gift.imageUrl ? (
+                <img
+                  src={gift.imageUrl}
+                  alt={gift.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gold-light via-blush to-rose/40 flex items-center justify-center">
+                  <span
+                    className="text-[6rem]"
+                    style={{
+                      filter: "drop-shadow(0 8px 20px rgba(74,48,40,0.2))",
+                    }}
+                  >
+                    {gift.emoji}
+                  </span>
+                </div>
+              )}
+
               {isFull && (
                 <div className="absolute inset-0 bg-brand-dark/40 flex items-center justify-center">
                   <span className="text-white font-cormorant italic text-2xl font-light border border-white/40 px-6 py-2 rounded-full backdrop-blur-sm">
@@ -176,6 +234,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                 {gift.emoji} {gift.cat}
               </span>
             </div>
+
             <div className="p-7 pt-5">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <h2 className="font-cormorant text-[1.7rem] font-light text-brand-dark leading-tight flex-1">
@@ -185,31 +244,97 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                   {gift.price}
                 </span>
               </div>
+
+              {/* Disponibilidade e link */}
+              {(remaining > 0 || gift.link) && (
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`w-2 h-2 rounded-full ${isFull ? "bg-blush" : "bg-sage"}`}
+                    />
+                    <span className="text-[0.75rem] font-light text-brand-text-light">
+                      {isFull
+                        ? "Presente já escolhido"
+                        : `${remaining} disponíve${remaining > 1 ? "is" : "l"}`}
+                    </span>
+                  </div>
+                  {gift.link && (
+                    <a
+                      href={gift.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[0.72rem] font-light text-rose hover:underline flex items-center gap-1 ml-auto"
+                    >
+                      Ver na loja
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Progress bar */}
+              {gift.qty > 1 && (
+                <div className="mb-5">
+                  <div className="flex justify-between text-[0.7rem] font-light text-brand-text-light mb-1.5">
+                    <span>
+                      {gift.taken} de {gift.qty} escolhidos
+                    </span>
+                    <span>{Math.round((gift.taken / gift.qty) * 100)}%</span>
+                  </div>
+                  <div className="h-1.5 bg-blush/30 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blush to-rose rounded-full transition-all duration-700"
+                      style={{ width: `${(gift.taken / gift.qty) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <p className="text-[0.88rem] font-light text-brand-text-light leading-relaxed mb-6">
-                {gift.longDesc}
+                {gift.desc}
               </p>
 
-              {gift.donors.length > 0 && (
+              {/* Contribuintes reais do Firebase */}
+              {contributors.length > 0 && (
                 <div className="mb-6">
                   <p className="text-[0.68rem] font-light tracking-[0.22em] uppercase text-gold mb-3 flex items-center gap-2">
                     <span className="block w-5 h-px bg-gold" />
                     Escolhido por
                   </p>
-                  {gift.donors.map((d, i) => (
+                  {contributors.map((c, i) => (
                     <div
                       key={i}
                       className="flex gap-3 items-start p-4 bg-cream rounded-2xl mb-2"
                     >
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blush to-rose flex items-center justify-center text-white text-[0.72rem] font-medium shrink-0">
-                        {d.avatar}
+                        {makeAvatar(c.name)}
                       </div>
-                      <div>
-                        <p className="text-[0.82rem] font-medium text-brand-dark">
-                          {d.name}
-                        </p>
-                        {d.message && (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <p className="text-[0.82rem] font-medium text-brand-dark">
+                            {c.name}
+                          </p>
+                          {c.createdAt && (
+                            <span className="text-[0.68rem] font-light text-brand-text-light/60 shrink-0">
+                              {formatDate(c.createdAt)}
+                            </span>
+                          )}
+                        </div>
+                        {c.message && (
                           <p className="font-cormorant italic text-[0.95rem] text-brand-text-light">
-                            "{d.message}"
+                            "{c.message}"
                           </p>
                         )}
                       </div>
@@ -347,7 +472,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={3}
-                  placeholder="Escreva uma mensagem carinhosa para Ana & Lucas…"
+                  placeholder="Escreva uma mensagem carinhosa para Natália & Leonardo…"
                   className={`${inputCls} resize-none`}
                   maxLength={300}
                 />
@@ -380,7 +505,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
           </div>
         )}
 
-        {/* ── PAGAMENTO (Brick) ── */}
+        {/* ── PAGAMENTO (Brick do MP) ── */}
         {step === "payment" && amount > 0 && (
           <div className="p-7">
             <button
@@ -428,109 +553,99 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               </span>
             </div>
 
-            {/* O Brick do Mercado Pago renderiza aqui */}
-            <Payment
-              initialization={{
-                amount,
-                // preferenceId,
-                payer: {
-                  email: guestEmail,
-                },
-              }}
-              customization={{
-                paymentMethods: {
-                  ticket: "all", // inclui Pix
-                  creditCard: "all",
-                  debitCard: "all",
-                  bankTransfer: ["pix"],
-                  maxInstallments: 3,
-                },
-                visual: {
-                  style: {
-                    // Personaliza levemente para combinar com o design
-                    theme: "default",
-                    customVariables: {
-                      baseColor: "#8b4a35", // terracotta
-                      // buttonBackground: "#8b4a35",
-                      buttonTextColor: "#ffffff",
+            {/* Brick do MP — só renderiza enquanto o QR Code não aparece */}
+            {!pixQrCode && (
+              <Payment
+                initialization={{
+                  amount,
+                  payer: { email: guestEmail },
+                }}
+                customization={{
+                  paymentMethods: {
+                    ticket: "all",
+                    creditCard: "all",
+                    debitCard: "all",
+                    bankTransfer: ["pix"],
+                    maxInstallments: 3,
+                  },
+                  visual: {
+                    style: {
+                      theme: "default",
+                      customVariables: {
+                        baseColor: "#8b4a35",
+                        buttonTextColor: "#ffffff",
+                      },
                     },
                   },
-                },
-              }}
-              onSubmit={async ({ formData }) => {
-                const res = await fetch("/api/payments/create-payment", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    ...formData,
-                    transaction_amount: amount,
-                    description: gift!.name,
-                    payment_method_id: "pix",
-                    payer: {
-                      email: guestEmail,
-                    },
-                    metadata: {
-                      gift_id: gift!.id,
-                      guest_name: guestName,
-                      message,
-                    },
-                  }),
-                });
+                }}
+                onSubmit={async ({ formData }) => {
+                  const res = await fetch("/api/payments/create-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      ...formData,
+                      transaction_amount: amount,
+                      description: gift!.name,
+                      payment_method_id: "pix",
+                      payer: { email: guestEmail },
+                      metadata: {
+                        gift_id: gift!.id,
+                        guest_name: guestName,
+                        message,
+                      },
+                    }),
+                  });
 
-                const data = await res.json();
+                  const data = await res.json();
 
-                setPaymentId(data.id);
-                setPixQrCode(data.qr_code_base64);
-                setPixCode(data.qr_code);
+                  setPaymentId(data.id);
+                  setPixQrCode(data.qr_code_base64);
+                  setPixCode(data.qr_code);
 
-                return {
-                  id: data.id,
-                };
-              }}
-              // onSubmit={async ({ selectedPaymentMethod, formData }) => {
-              //   // O Brick tokeniza o cartão e chama aqui com os dados prontos
-              //   // Para Pix, o MP cuida de tudo automaticamente via preferência
-              //   console.log(
-              //     "Payment submitted:",
-              //     selectedPaymentMethod,
-              //     formData,
-              //   );
-              // }}
-              onError={(error) => {
-                console.error("Payment error:", error);
-                setPaymentError(
-                  "Ocorreu um erro no pagamento. Tente novamente.",
-                );
-              }}
-              onReady={() => {
-                // Brick carregou — pode esconder um spinner se tiver
-              }}
-            />
+                  return { id: data.id };
+                }}
+                onError={(error) => {
+                  console.error("Payment error:", error);
+                  setPaymentError(
+                    "Ocorreu um erro no pagamento. Tente novamente.",
+                  );
+                }}
+                onReady={() => {}}
+              />
+            )}
 
+            {/* QR Code do Pix */}
             {pixQrCode && (
-              <div className="mt-6 flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-4 bg-cream rounded-2xl my-6 p-4 border border-blush/30">
                 <img
                   src={`data:image/png;base64,${pixQrCode}`}
+                  alt="QR Code Pix"
                   className="w-64 h-64"
                 />
 
                 <textarea
                   value={pixCode || ""}
                   readOnly
-                  className="w-full text-xs p-2 border rounded"
+                  className="w-full text-xs p-2 border rounded max-w-[80%]"
                 />
 
-                <button onClick={() => navigator.clipboard.writeText(pixCode!)}>
-                  Copiar código Pix
+                <button
+                  onClick={handleCopyPix}
+                  className="px-4 py-2 bg-terracotta text-white rounded-lg text-sm hover:bg-rose-deep transition-all"
+                >
+                  {copied ? "Copiado ✓" : "Copiar código Pix"}
                 </button>
 
                 <button
                   onClick={checkPaymentStatus}
-                  className="mt-4 bg-terracotta text-white px-4 py-2 rounded"
+                  disabled={checkState === "checking" || paymentApproved}
+                  className="mt-4 bg-terracotta text-white px-4 py-2 rounded transition-all disabled:opacity-60"
                 >
-                  Já paguei, verificar pagamento
+                  {checkState === "idle" && "Já paguei, verificar pagamento"}
+                  {checkState === "checking" && "Verificando..."}
+                  {checkState === "approved" && "Pagamento confirmado ✓"}
+                  {checkState === "pending" && "Pagamento ainda não encontrado"}
+                  {checkState === "error" && "Erro ao verificar"}
                 </button>
               </div>
             )}
@@ -572,8 +687,8 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             </h2>
             <p className="text-[0.88rem] font-light text-brand-text-light leading-relaxed max-w-sm mb-2">
               <span className="font-medium text-brand-dark">{guestName}</span>,
-              seu pagamento foi aprovado e o presente foi registrado. Ana &
-              Lucas vão adorar!
+              seu pagamento foi aprovado e o presente foi registrado. Natália
+              &amp; Leonardo vão adorar!
             </p>
             {message && (
               <div className="mt-4 w-full max-w-sm bg-cream rounded-2xl p-5 border border-blush/30 text-left">

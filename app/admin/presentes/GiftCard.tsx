@@ -1,4 +1,4 @@
-import type { Gift } from "./gifts.data";
+import { Gift } from "@/app/types";
 import { prioClass, prioLabel } from "./gifts.data";
 
 interface GiftCardProps {
@@ -8,22 +8,35 @@ interface GiftCardProps {
   onDelete: (g: Gift) => void;
 }
 
-export default function GiftCard({ gift: g, viewMode, onEdit, onDelete }: GiftCardProps) {
+export default function GiftCard({
+  gift: g,
+  viewMode,
+  onEdit,
+  onDelete,
+}: GiftCardProps) {
   const isTaken = g.taken >= g.qty;
   const pct = g.qty > 0 ? Math.round((g.taken / g.qty) * 100) : 0;
 
   const ImageBlock = (
     <div
-      className={`relative bg-gradient-to-br from-gold-light via-blush to-rose/40 grid place-items-center ${
-        viewMode === "list" ? "w-[110px] shrink-0 self-stretch" : "aspect-[16/9] w-full"
+      className={`relative bg-gradient-to-br from-gold-light via-blush to-rose/40 overflow-hidden ${
+        viewMode === "list"
+          ? "w-[110px] shrink-0 self-stretch"
+          : "aspect-[16/9] w-full"
       }`}
     >
-      <span
-        className="text-5xl transition-transform duration-400 group-hover:scale-110 group-hover:-rotate-6"
-        style={{ filter: "drop-shadow(0 4px 8px rgba(74,48,40,0.15))" }}
-      >
-        {g.emoji}
-      </span>
+      {g.imageUrl ? (
+        <img
+          src={g.imageUrl}
+          alt={g.name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 grid place-items-center text-4xl">
+          {g.emoji}
+        </div>
+      )}
+
       {isTaken && (
         <div className="absolute inset-0 bg-brand-dark/45 flex items-center justify-center">
           <span className="text-white text-[0.68rem] font-medium tracking-[0.18em] uppercase border border-white/50 rounded-full px-3.5 py-1 backdrop-blur-sm">
@@ -50,7 +63,9 @@ export default function GiftCard({ gift: g, viewMode, onEdit, onDelete }: GiftCa
       {ImageBlock}
 
       {/* Body */}
-      <div className={`p-4 ${viewMode === "list" ? "flex-1 flex flex-col justify-center" : ""}`}>
+      <div
+        className={`p-4 ${viewMode === "list" ? "flex-1 flex flex-col justify-center" : ""}`}
+      >
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3
             className={`font-cormorant font-normal text-brand-dark leading-tight ${
@@ -61,7 +76,7 @@ export default function GiftCard({ gift: g, viewMode, onEdit, onDelete }: GiftCa
           </h3>
           <span
             className={`shrink-0 text-[0.62rem] font-medium tracking-[0.1em] uppercase px-2.5 py-1 rounded-full ${prioClass(
-              g.prioridade
+              g.prioridade,
             )}`}
           >
             {prioLabel(g.prioridade)}
@@ -107,14 +122,36 @@ export default function GiftCard({ gift: g, viewMode, onEdit, onDelete }: GiftCa
           onClick={() => onEdit(g)}
           className="inline-flex items-center gap-1.5 text-[0.7rem] font-normal tracking-[0.08em] uppercase px-3.5 py-2 rounded-full bg-rose/10 text-rose hover:bg-rose/20 transition-colors"
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
           Editar
         </button>
         <button
           onClick={() => onDelete(g)}
           className="inline-flex items-center gap-1.5 text-[0.7rem] font-normal tracking-[0.08em] uppercase px-3.5 py-2 rounded-full bg-terracotta/8 text-terracotta hover:bg-terracotta/18 transition-colors"
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+          </svg>
           Excluir
         </button>
       </div>
