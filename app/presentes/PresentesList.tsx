@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Gift } from "@/app/types";
 import { CAT_FILTERS, STATUS_FILTERS, getStatus } from "./gifts.public";
 import PublicGiftCard from "./PublicGiftCard";
@@ -13,6 +13,11 @@ interface PresentesListProps {
 
 export default function PresentesList({ initialGifts }: PresentesListProps) {
   const [gifts, setGifts] = useState<Gift[]>(initialGifts);
+
+  useEffect(() => {
+    setGifts(initialGifts);
+  }, [initialGifts]);
+
   const [catFilter, setCatFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [search, setSearch] = useState("");

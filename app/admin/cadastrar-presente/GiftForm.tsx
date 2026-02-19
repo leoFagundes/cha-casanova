@@ -1,6 +1,6 @@
 "use client";
 
-import { Gift, GiftCreate } from "@/app/types";
+import { GiftCreate } from "@/app/types";
 import GiftRepository from "@/services/repositories/GiftRepository";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";

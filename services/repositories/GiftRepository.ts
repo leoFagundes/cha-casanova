@@ -11,6 +11,7 @@ import {
   arrayUnion,
   increment,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -113,6 +114,21 @@ class GiftRepository {
 
       return false;
     }
+  }
+
+  static subscribe(callback: (gifts: Gift[]) => void) {
+    const q = query(collection(db, this.collectionName), orderBy("name"));
+
+    return onSnapshot(q, (snapshot) => {
+      const gifts = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Gift, "id">),
+        contributions: doc.data().contributions ?? [],
+        taken: doc.data().contributions?.length ?? 0,
+      }));
+
+      callback(gifts);
+    });
   }
 }
 

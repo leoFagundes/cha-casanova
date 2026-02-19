@@ -39,6 +39,7 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState(1);
   const [link, setLink] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [desc, setDesc] = useState("");
   const [prio, setPrio] = useState<Priority>("media");
 
@@ -51,6 +52,7 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
       setLink(gift.link || "");
       setDesc(gift.desc);
       setPrio(gift.prioridade);
+      setImageUrl(gift.imageUrl || "");
     }
   }, [gift]);
 
@@ -180,6 +182,18 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 placeholder="https://…"
+                className={inputCls}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-[0.72rem] font-light tracking-[0.14em] uppercase text-brand-text-light mb-1.5">
+                URL da imagem
+              </label>
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://…/imagem.jpg"
                 className={inputCls}
               />
             </div>
