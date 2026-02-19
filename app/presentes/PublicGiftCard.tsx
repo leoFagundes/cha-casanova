@@ -47,8 +47,8 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
         )}
 
         {/* Category badge */}
-        <span className="absolute top-3 left-3 text-[0.65rem] font-light tracking-[0.14em] uppercase text-white/85 bg-brand-dark/30 backdrop-blur-sm px-2.5 py-1 rounded-full">
-          {gift.cat}
+        <span className="flex items-center gap-1 absolute bottom-3 left-3 text-[0.65rem] font-light tracking-[0.14em] uppercase border-white/40 text-white backdrop-blur-sm bg-terracotta/30 px-2.5 py-1 rounded-full z-20 p-2 ">
+          {gift.emoji} {gift.cat}
         </span>
 
         {/* Taken overlay — mantém suas classes: backdrop-blur-[4px] + bg-terracotta/30 */}
@@ -76,7 +76,7 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
       </div>
 
       {/* Body */}
-      <div className="p-4 pb-5">
+      <div className="relative p-4 pb-5">
         <h3 className="font-cormorant text-[1.15rem] font-normal text-brand-dark leading-snug mb-1.5 group-hover:text-terracotta transition-colors duration-300">
           {gift.name}
         </h3>

@@ -18,7 +18,7 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
-  title: "Chá de Panela — Natália & Leonardo",
+  title: "Chá de Casa Nova — Natália & Leonardo",
   description:
     "Celebre conosco! Escolha um presente especial para o lar de Natália e Leonardo.",
 };

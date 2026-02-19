@@ -38,8 +38,8 @@ export default function GiftCard({
       )}
 
       {isTaken && (
-        <div className="absolute inset-0 bg-brand-dark/45 flex items-center justify-center">
-          <span className="text-white text-[0.68rem] font-medium tracking-[0.18em] uppercase border border-white/50 rounded-full px-3.5 py-1 backdrop-blur-sm">
+        <div className="absolute inset-0 bg-brand-dark/40 backdrop-blur-[4px] flex items-center justify-center">
+          <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
             Escolhido ♡
           </span>
         </div>

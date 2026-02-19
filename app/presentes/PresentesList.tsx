@@ -2,18 +2,12 @@
 
 import { useState, useCallback } from "react";
 import type { Gift } from "@/app/types";
-import {
-  CAT_FILTERS,
-  STATUS_FILTERS,
-  getStatus,
-  makeAvatar,
-} from "./gifts.public";
+import { CAT_FILTERS, STATUS_FILTERS, getStatus } from "./gifts.public";
 import PublicGiftCard from "./PublicGiftCard";
 import GiftModal from "./GiftModal";
 import DonorsWall from "./DonorsWall";
 
 interface PresentesListProps {
-  // Dados reais vindos do Server Component (page.tsx)
   initialGifts: Gift[];
 }
 
@@ -27,7 +21,8 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
 
   const filtered = gifts.filter((g) => {
     const s = getStatus(g);
-    const matchCat = catFilter === "todos" || g.cat === catFilter;
+    const matchCat =
+      catFilter === "todos" || g.cat.toLowerCase() === catFilter.toLowerCase();
     const matchStatus =
       statusFilter === "todos" ||
       (statusFilter === "disponivel" && s !== "doado") ||

@@ -10,6 +10,7 @@ import DeleteModal from "./DeleteModal";
 import Toast, { type ToastData } from "./Toast";
 import GiftRepository from "@/services/repositories/GiftRepository";
 import { Gift } from "@/app/types";
+import PaymentRepository from "@/services/repositories/PaymentRepositoriy";
 
 type ViewMode = "grid" | "list";
 
@@ -26,18 +27,42 @@ export default function GiftsList() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   useEffect(() => {
-    async function loadGifts() {
+    async function loadData() {
       try {
-        const data = await GiftRepository.getAll();
-        setGifts(data);
+        const [giftsData, paymentsData] = await Promise.all([
+          GiftRepository.getAll(),
+          PaymentRepository.getAll(),
+        ]);
+
+        const giftsWithPayments: Gift[] = giftsData.map((gift) => {
+          const giftPayments = paymentsData.filter((p) => p.giftId === gift.id);
+
+          return {
+            ...gift,
+
+            taken: giftPayments.length,
+
+            contributions: giftPayments.map((p) => ({
+              name: p.guestName,
+              email: "",
+              message: p.message,
+              paymentId: p.id,
+              createdAt:
+                p.createdAt?.toDate?.()?.toISOString?.() ??
+                new Date().toISOString(),
+            })),
+          };
+        });
+
+        setGifts(giftsWithPayments);
       } catch (error) {
-        console.error("Erro ao carregar presentes:", error);
+        console.error("Erro ao carregar dados:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    loadGifts();
+    loadData();
   }, []);
 
   const addToast = (message: string, type: "success" | "error" = "success") => {

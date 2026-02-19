@@ -2,7 +2,7 @@ export type Priority = "alta" | "media" | "baixa";
 
 export interface GiftContribution {
   name: string;
-  email: string;
+  email?: string;
   message?: string;
   paymentId: string;
   createdAt: string;

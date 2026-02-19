@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PresentesList from "./PresentesList";
 import GiftRepository from "@/services/repositories/GiftRepository";
+import PaymentRepository from "@/services/repositories/PaymentRepositoriy";
 
 export const metadata: Metadata = {
   title: "Lista de Presentes — Natália & Leonardo",
@@ -15,6 +16,24 @@ export const revalidate = 60;
 
 export default async function PresentesPage() {
   const gifts = await GiftRepository.getAll();
+  const payments = await PaymentRepository.getAll();
+
+  const giftsWithContributions = gifts.map((gift) => {
+    const contributions = payments
+      .filter((p) => p.giftId === gift.id)
+      .map((p) => ({
+        name: p.guestName,
+        message: p.message,
+        createdAt: p.createdAt?.toDate?.()?.toISOString?.(),
+        paymentId: p.id,
+      }));
+
+    return {
+      ...gift,
+      contributions,
+      taken: contributions.length,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-cream relative overflow-x-hidden">
@@ -186,7 +205,7 @@ export default async function PresentesPage() {
       </div>
 
       {/* Passa os dados reais do Firebase via prop */}
-      <PresentesList initialGifts={gifts} />
+      <PresentesList initialGifts={giftsWithContributions} />
 
       {/* Keyframes */}
       <style>{`
