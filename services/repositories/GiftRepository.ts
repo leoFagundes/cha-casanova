@@ -57,16 +57,18 @@ class GiftRepository {
    */
   static async update(id: string, data: Partial<Gift>): Promise<boolean> {
     try {
+      if (!id) {
+        console.error("ID inválido:", id);
+        return false;
+      }
+
       const docRef = doc(db, this.collectionName, id);
 
       await updateDoc(docRef, data);
 
-      console.log("Presente atualizado");
-
       return true;
     } catch (error) {
       console.error("Erro ao atualizar presente:", error);
-
       return false;
     }
   }

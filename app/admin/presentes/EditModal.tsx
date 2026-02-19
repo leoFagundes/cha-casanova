@@ -38,7 +38,7 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
   const [cat, setCat] = useState("Cozinha");
   const [price, setPrice] = useState("");
   const [qty, setQty] = useState(1);
-  const [link, setLink] = useState<string | undefined>("");
+  const [link, setLink] = useState("");
   const [desc, setDesc] = useState("");
   const [prio, setPrio] = useState<Priority>("media");
 
@@ -48,7 +48,7 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
       setCat(gift.cat);
       setPrice(gift.price);
       setQty(gift.qty);
-      setLink(gift.link);
+      setLink(gift.link || "");
       setDesc(gift.desc);
       setPrio(gift.prioridade);
     }
@@ -204,9 +204,14 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
               Cancelar
             </button>
             <button
-              onClick={() =>
+              onClick={() => {
+                if (!gift.id) {
+                  console.error("Gift sem id!", gift);
+                  return;
+                }
+
                 onSave({
-                  ...gift,
+                  id: gift.id,
                   name,
                   cat,
                   emoji:
@@ -214,11 +219,14 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
                     gift.emoji,
                   price,
                   qty,
-                  link,
+                  link: link || "",
                   desc,
                   prioridade: prio,
-                })
-              }
+                  contributions: gift.contributions || [],
+                  taken: gift.taken ?? 0,
+                  imageUrl: gift.imageUrl || "",
+                });
+              }}
               className="inline-flex items-center gap-2 bg-terracotta text-white text-[0.75rem] font-medium tracking-[0.14em] uppercase px-6 py-3 rounded-full hover:bg-deep-rose transition-all hover:-translate-y-0.5 shadow-[0_6px_18px_rgba(139,74,53,0.28)]"
             >
               Salvar alterações
