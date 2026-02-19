@@ -80,6 +80,10 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   const remaining = gift.qty - gift.taken;
   const contributors = gift.contributions ?? [];
 
+  function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   // ── Valida o formulário e cria a preferência de pagamento ──────────────────
   async function handleGoToPayment() {
     let hasError = false;
@@ -87,7 +91,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       setNameErr(true);
       hasError = true;
     }
-    if (!guestEmail.trim() || !guestEmail.includes("@")) {
+    if (!guestEmail.trim() || !isValidEmail(guestEmail)) {
       setEmailErr(true);
       hasError = true;
     }
