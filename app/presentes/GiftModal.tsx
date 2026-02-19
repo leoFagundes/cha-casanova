@@ -224,13 +224,13 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               )}
 
               {isFull && (
-                <div className="absolute inset-0 bg-brand-dark/40 flex items-center justify-center">
-                  <span className="text-white font-cormorant italic text-2xl font-light border border-white/40 px-6 py-2 rounded-full backdrop-blur-sm">
-                    Já foi escolhido ♡
+                <div className="absolute inset-0 bg-brand-dark/40 backdrop-blur-[4px] flex items-center justify-center">
+                  <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
+                    Item já foi Escolhido ♡
                   </span>
                 </div>
               )}
-              <span className="absolute bottom-4 left-4 text-[0.68rem] font-light tracking-[0.16em] uppercase text-white/80 bg-brand-dark/30 backdrop-blur-sm px-3 py-1.5 rounded-full">
+              <span className="absolute bottom-4 left-4 text-[0.68rem] font-light text-white tracking-[0.16em] uppercase  border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
                 {gift.emoji} {gift.cat}
               </span>
             </div>
