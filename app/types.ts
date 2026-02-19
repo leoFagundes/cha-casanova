@@ -5,7 +5,7 @@ export interface GiftContribution {
   email?: string;
   message?: string;
   paymentId: string;
-  createdAt: string;
+  createdAt: Date | String;
 }
 
 export interface GiftBase {

@@ -173,7 +173,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       email: guestEmail ?? "",
       message: message ?? "",
       paymentId: paymentId ?? "",
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
 
     await GiftRepository.addContribution(gift!.id, contribution);
@@ -338,7 +338,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                           </p>
                           {c.createdAt && (
                             <span className="text-[0.68rem] font-light text-brand-text-light/60 shrink-0">
-                              {formatDate(c.createdAt)}
+                              {formatDate(c.createdAt.toString())}
                             </span>
                           )}
                         </div>

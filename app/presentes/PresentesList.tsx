@@ -196,7 +196,7 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
       {/* Toast */}
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 bg-brand-dark text-white/90 text-[0.82rem] font-light px-6 py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)]"
+          className="!text-rose backdrop-blur-[4px] font-semibold fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 bg-brand-dark text-white/90 text-[0.82rem] px-6 py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)]"
           style={{ animation: "toastIn .35s ease" }}
         >
           <span className="w-2 h-2 rounded-full bg-[#7fc47f] shrink-0" />
