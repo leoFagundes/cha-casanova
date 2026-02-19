@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PresentesList from "./PresentesList";
 import GiftRepository from "@/services/repositories/GiftRepository";
-import PaymentRepository from "@/services/repositories/PaymentRepositoriy";
 
 export const metadata: Metadata = {
   title: "Lista de Presentes — Natália & Leonardo",
@@ -10,30 +9,16 @@ export const metadata: Metadata = {
     "Escolha um presente especial para o novo lar de Natália e Leonardo.",
 };
 
-// Revalida a cada 60s. Quando o webhook gravar no Firebase,
+// Revalida a cada 1s. Quando o webhook gravar no Firebase,
 // em até 1 minuto a página já reflete o estado atualizado.
-export const revalidate = 60;
+export const revalidate = 1;
 
 export default async function PresentesPage() {
+  // ✅ CORREÇÃO: os gifts já carregam suas contributions diretamente do Firestore.
+  // O GiftRepository.addContribution() escreve no campo contributions[] do gift.
+  // Não precisamos do PaymentRepository aqui — ele tinha um índice composto
+  // faltando (where + orderBy) que fazia a query retornar vazio silenciosamente.
   const gifts = await GiftRepository.getAll();
-  const payments = await PaymentRepository.getAll();
-
-  const giftsWithContributions = gifts.map((gift) => {
-    const contributions = payments
-      .filter((p) => p.giftId === gift.id)
-      .map((p) => ({
-        name: p.guestName,
-        message: p.message,
-        createdAt: p.createdAt?.toDate?.()?.toISOString?.(),
-        paymentId: p.id,
-      }));
-
-    return {
-      ...gift,
-      contributions,
-      taken: contributions.length,
-    };
-  });
 
   return (
     <div className="min-h-screen bg-cream relative overflow-x-hidden">
@@ -205,7 +190,7 @@ export default async function PresentesPage() {
       </div>
 
       {/* Passa os dados reais do Firebase via prop */}
-      <PresentesList initialGifts={giftsWithContributions} />
+      <PresentesList initialGifts={gifts} />
 
       {/* Keyframes */}
       <style>{`
