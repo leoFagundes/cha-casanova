@@ -558,15 +558,16 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               <Payment
                 initialization={{
                   amount,
+                  preferenceId: preferenceId!,
                   payer: { email: guestEmail },
                 }}
                 customization={{
                   paymentMethods: {
                     ticket: "all",
                     creditCard: "all",
-                    debitCard: "all",
+                    // debitCard: "all",
                     bankTransfer: ["pix"],
-                    maxInstallments: 3,
+                    maxInstallments: 10,
                   },
                   visual: {
                     style: {
@@ -583,11 +584,18 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                      ...formData,
+                      ...formData, // já contém payment_method_id correto
+
                       transaction_amount: amount,
                       description: gift!.name,
-                      payment_method_id: "pix",
-                      payer: { email: guestEmail },
+
+                      installments: formData.installments,
+
+                      payer: {
+                        // email: guestEmail,
+                        ...formData.payer,
+                      },
+
                       metadata: {
                         gift_id: gift!.id,
                         guest_name: guestName,

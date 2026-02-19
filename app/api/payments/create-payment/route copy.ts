@@ -13,22 +13,8 @@ export async function POST(req: NextRequest) {
 
     const result = await payment.create({
       body: {
-        transaction_amount: body.transaction_amount,
-        description: body.description,
-
-        payment_method_id: body.payment_method_id,
-
-        payer: body.payer,
-
-        installments: body.installments || 1,
-
-        metadata: {
-          gift_id: body.metadata?.gift_id,
-          guest_name: body.metadata?.guest_name,
-          message: body.metadata?.message || "",
-        },
-
-        notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/payments/webhook`,
+        ...body,
+        payment_method_id: body.payment_method_id || "pix",
       },
     });
 
