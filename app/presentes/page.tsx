@@ -10,24 +10,34 @@ export default function PresentesPage() {
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
+  // useEffect(() => {
+  //   let unsubscribe: (() => void) | null = null;
 
+  //   async function loadInitial() {
+  //     const initial = await GiftRepository.getAll();
+  //     setGifts(initial);
+  //     setLoading(false);
+
+  //     unsubscribe = GiftRepository.subscribe((updatedGifts) => {
+  //       setGifts(updatedGifts);
+  //     });
+  //   }
+
+  //   loadInitial();
+
+  //   return () => {
+  //     if (unsubscribe) unsubscribe();
+  //   };
+  // }, []);
+
+  useEffect(() => {
     async function loadInitial() {
       const initial = await GiftRepository.getAll();
       setGifts(initial);
       setLoading(false);
-
-      unsubscribe = GiftRepository.subscribe((updatedGifts) => {
-        setGifts(updatedGifts);
-      });
     }
 
     loadInitial();
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
   }, []);
 
   return (
