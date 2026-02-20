@@ -46,33 +46,42 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
   // Chamado pelo GiftModal após pagamento aprovado.
   // giftId agora é string (ID do Firestore).
   // Atualiza o estado local otimisticamente — o Firebase já foi gravado pelo webhook.
+  // const handleChoose = useCallback(
+  //   (giftId: string, name: string, message: string) => {
+  //     setGifts((prev) =>
+  //       prev.map((g) => {
+  //         if (g.id !== giftId) return g;
+  //         return {
+  //           ...g,
+  //           taken: g.taken + 1,
+  //           contributions: [
+  //             ...g.contributions,
+  //             {
+  //               name,
+  //               email: "",
+  //               message: message || undefined,
+  //               paymentId: "pending", // será substituído pelo webhook
+  //               createdAt: new Date().toISOString(),
+  //             },
+  //           ],
+  //         };
+  //       }),
+  //     );
+
+  //     const giftName = gifts.find((g) => g.id === giftId)?.name ?? "";
+  //     setToast(`${name} escolheu "${giftName}" ♡`);
+  //     setTimeout(() => setToast(null), 4000);
+  //   },
+  //   [gifts],
+  // );
   const handleChoose = useCallback(
     (giftId: string, name: string, message: string) => {
-      setGifts((prev) =>
-        prev.map((g) => {
-          if (g.id !== giftId) return g;
-          return {
-            ...g,
-            taken: g.taken + 1,
-            contributions: [
-              ...g.contributions,
-              {
-                name,
-                email: "",
-                message: message || undefined,
-                paymentId: "pending", // será substituído pelo webhook
-                createdAt: new Date().toISOString(),
-              },
-            ],
-          };
-        }),
-      );
-
+      // Apenas mostra o toast — o Firebase listener atualizará o estado
       const giftName = gifts.find((g) => g.id === giftId)?.name ?? "";
       setToast(`${name} escolheu "${giftName}" ♡`);
       setTimeout(() => setToast(null), 4000);
     },
-    [],
+    [gifts],
   );
 
   return (

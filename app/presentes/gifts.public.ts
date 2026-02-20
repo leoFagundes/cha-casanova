@@ -7,8 +7,8 @@ import type { Gift } from "@/app/types";
 export type GiftStatus = "disponivel" | "reservado" | "doado";
 
 export function getStatus(g: Gift): GiftStatus {
-  if (g.contributions.length >= g.qty) return "doado";
-  // if (g.taken >= g.qty) return "doado";
+  // if (g.contributions.length >= g.qty) return "doado";
+  if (g.taken >= g.qty) return "doado";
   if (g.taken > 0) return "reservado";
   return "disponivel";
 }
