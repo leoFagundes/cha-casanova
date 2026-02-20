@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import type { Gift, GiftContribution } from "@/app/types";
 import { getStatus, makeAvatar, formatDate } from "./gifts.public";
@@ -42,6 +42,8 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   >("pix_card");
   const [isSubmittingInPerson, setIsSubmittingInPerson] = useState(false);
 
+  const paymentHandledRef = useRef(false);
+
   // Polling automático a cada 3s enquanto aguarda pagamento Pix
   useEffect(() => {
     if (!paymentId || paymentApproved) return;
@@ -52,6 +54,8 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   // Reset completo ao abrir um novo presente
   useEffect(() => {
     if (gift) {
+      paymentHandledRef.current = false;
+
       setStep("detail");
       setGuestName("");
       setGuestEmail("");
@@ -175,9 +179,14 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
   // ── Confirma pagamento e avança para sucesso ───────────────────────────────
   async function handlePaymentSuccess() {
-    if (paymentApproved) return;
+    if (paymentHandledRef.current) return;
+
+    paymentHandledRef.current = true;
+
     setPaymentApproved(true);
+
     onChoose(gift!.id, guestName, message);
+
     const contribution: GiftContribution = {
       name: guestName,
       email: guestEmail ?? "",
@@ -187,6 +196,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     };
 
     await GiftRepository.addContribution(gift!.id, contribution);
+
     setStep("success");
   }
 
