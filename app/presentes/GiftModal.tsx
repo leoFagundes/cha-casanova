@@ -187,15 +187,15 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
     onChoose(gift!.id, guestName, message);
 
-    const contribution: GiftContribution = {
-      name: guestName,
-      email: guestEmail ?? "",
-      message: message ?? "",
-      paymentId: paymentId ?? "",
-      createdAt: new Date(),
-    };
+    // const contribution: GiftContribution = {
+    //   name: guestName,
+    //   email: guestEmail ?? "",
+    //   message: message ?? "",
+    //   paymentId: paymentId ?? "",
+    //   createdAt: new Date(),
+    // };
 
-    await GiftRepository.addContribution(gift!.id, contribution);
+    // await GiftRepository.addContribution(gift!.id, contribution);
 
     setStep("success");
   }
