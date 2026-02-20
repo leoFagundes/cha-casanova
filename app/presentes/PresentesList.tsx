@@ -72,7 +72,7 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
       setToast(`${name} escolheu "${giftName}" ♡`);
       setTimeout(() => setToast(null), 4000);
     },
-    [gifts],
+    [],
   );
 
   return (
