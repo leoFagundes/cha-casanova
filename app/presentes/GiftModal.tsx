@@ -41,6 +41,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     "pix_card" | "in_person"
   >("pix_card");
   const [isSubmittingInPerson, setIsSubmittingInPerson] = useState(false);
+  const [brickReady, setBrickReady] = useState(false);
 
   const paymentHandledRef = useRef(false);
 
@@ -128,6 +129,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       const data = await res.json();
       setPreferenceId(data.preferenceId);
       setAmount(data.amount);
+      setBrickReady(true);
       setStep("payment");
     } catch (err) {
       setPaymentError("Não foi possível iniciar o pagamento. Tente novamente.");
@@ -676,7 +678,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             </div>
 
             {/* Brick do MP — só renderiza enquanto o QR Code não aparece */}
-            {!pixQrCode && (
+            {!pixQrCode && brickReady && (
               <Payment
                 initialization={{
                   amount,

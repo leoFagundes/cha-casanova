@@ -12,7 +12,6 @@ import {
   increment,
   serverTimestamp,
   onSnapshot,
-  setDoc,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -101,32 +100,33 @@ class GiftRepository {
     contribution: GiftContribution,
   ): Promise<boolean> {
     try {
-      if (!contribution.paymentId) {
-        console.error("paymentId obrigatório");
-        return false;
+      const docRef = doc(db, this.collectionName, giftId);
+
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        const existing: GiftContribution[] = data.contributions ?? [];
+        const alreadySaved = existing.some(
+          (c) => c.paymentId === contribution.paymentId,
+        );
+        if (alreadySaved) {
+          console.log(
+            "Contribution já existe, ignorando:",
+            contribution.paymentId,
+          );
+          return true;
+        }
       }
 
-      const contributionRef = doc(
-        db,
-        this.collectionName,
-        giftId,
-        "contributions",
-        contribution.paymentId,
-      );
-
-      // cria documento com ID único = paymentId
-      await setDoc(contributionRef, contribution, { merge: false });
-
-      // incrementa contador
-      const giftRef = doc(db, this.collectionName, giftId);
-
-      await updateDoc(giftRef, {
+      await updateDoc(docRef, {
+        contributions: arrayUnion(contribution),
         taken: increment(1),
       });
 
       return true;
     } catch (error) {
       console.error(error);
+
       return false;
     }
   }
