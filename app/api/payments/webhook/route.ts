@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     };
 
     // 1. Adiciona a contribution no Gift e incrementa taken
-    await GiftRepository.addContribution(metadata.gift_id, contribution);
+    // await GiftRepository.addContribution(metadata.gift_id, contribution);
 
     // ✅ CORREÇÃO 2: Cria o documento na coleção "payments".
     // A page.tsx usa PaymentRepository.getAll() para montar giftsWithContributions.
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         createdAt: FieldValue.serverTimestamp(),
       });
 
-    console.log("✅ Contribution e payment salvos:", paymentId);
+    // console.log("✅ Contribution e payment salvos:", paymentId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

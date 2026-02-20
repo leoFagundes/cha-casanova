@@ -41,7 +41,6 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     "pix_card" | "in_person"
   >("pix_card");
   const [isSubmittingInPerson, setIsSubmittingInPerson] = useState(false);
-  const [brickReady, setBrickReady] = useState(false);
 
   const paymentHandledRef = useRef(false);
 
@@ -129,7 +128,6 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       const data = await res.json();
       setPreferenceId(data.preferenceId);
       setAmount(data.amount);
-      setBrickReady(true);
       setStep("payment");
     } catch (err) {
       setPaymentError("Não foi possível iniciar o pagamento. Tente novamente.");
@@ -182,6 +180,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   // ── Confirma pagamento e avança para sucesso ───────────────────────────────
   async function handlePaymentSuccess() {
     if (paymentHandledRef.current) return;
+    if (step === "success") return;
 
     paymentHandledRef.current = true;
 
@@ -189,15 +188,15 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
     onChoose(gift!.id, guestName, message);
 
-    // const contribution: GiftContribution = {
-    //   name: guestName,
-    //   email: guestEmail ?? "",
-    //   message: message ?? "",
-    //   paymentId: paymentId ?? "",
-    //   createdAt: new Date(),
-    // };
+    const contribution: GiftContribution = {
+      name: guestName,
+      email: guestEmail ?? "",
+      message: message ?? "",
+      paymentId: paymentId ?? "",
+      createdAt: new Date(),
+    };
 
-    // await GiftRepository.addContribution(gift!.id, contribution);
+    await GiftRepository.addContribution(gift!.id, contribution);
 
     setStep("success");
   }
@@ -678,7 +677,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             </div>
 
             {/* Brick do MP — só renderiza enquanto o QR Code não aparece */}
-            {!pixQrCode && brickReady && (
+            {!pixQrCode && (
               <Payment
                 initialization={{
                   amount,
