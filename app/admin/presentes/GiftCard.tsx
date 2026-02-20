@@ -25,7 +25,7 @@ export default function GiftCard({
 
   const ImageBlock = (
     <div
-      className={`relative bg-gradient-to-br from-gold-light via-blush to-rose/40 overflow-hidden ${
+      className={`relative bg-white overflow-hidden ${
         viewMode === "list"
           ? "w-[110px] shrink-0 self-stretch"
           : "aspect-[16/9] w-full"
@@ -35,7 +35,7 @@ export default function GiftCard({
         <img
           src={g.imageUrl}
           alt={g.name}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain"
         />
       ) : (
         <div className="absolute inset-0 grid place-items-center text-4xl">

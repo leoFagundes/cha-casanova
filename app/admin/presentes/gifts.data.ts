@@ -7,6 +7,7 @@ export const CATEGORIES = [
   { value: "Banheiro", emoji: "🚿" },
   { value: "Decoração", emoji: "🌿" },
   { value: "Eletrodoméstico", emoji: "⚡" },
+  { value: "Cartão de Presente", emoji: "🎁" },
   { value: "Outro", emoji: "✨" },
 ];
 

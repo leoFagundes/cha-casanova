@@ -18,7 +18,7 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col group relative w-full text-left bg-warm-white rounded-[22px] border overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_56px_rgba(74,48,40,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose/50 ${
+      className={`flex flex-col group relative w-full h-fit text-left bg-warm-white rounded-[22px] border overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_56px_rgba(74,48,40,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose/50 ${
         isFull
           ? "border-blush/20 opacity-70"
           : "border-blush/30 hover:border-rose/25"
@@ -28,12 +28,12 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
       <div className="h-[3px] bg-gradient-to-r from-blush via-rose to-gold opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       {/* Image area — imagem real se existir, senão emoji */}
-      <div className="relative w-full aspect-[4/3] overflow-hidden">
+      <div className="relative bg-white w-full aspect-[4/3] overflow-hidden">
         {gift.imageUrl ? (
           <img
             src={gift.imageUrl}
             alt={gift.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold-light via-blush to-rose/35 flex items-center justify-center">
@@ -47,14 +47,14 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
         )}
 
         {/* Category badge */}
-        <span className="flex items-center gap-1 absolute bottom-3 left-3 text-[0.65rem] font-light tracking-[0.14em] uppercase border-white/40 text-white backdrop-blur-sm bg-terracotta/30 px-2.5 py-1 rounded-full z-20 p-2 ">
+        <span className="flex items-center gap-1 absolute bottom-3 left-3 text-[0.65rem] font-light tracking-[0.14em] uppercase border-white/40 text-white backdrop-blur-sm bg-gray-500/30 text-shadow px-2.5 py-1 rounded-full z-20 p-2 ">
           {gift.emoji} {gift.cat}
         </span>
 
         {/* Taken overlay — mantém suas classes: backdrop-blur-[4px] + bg-terracotta/30 */}
         {isFull && (
           <div className="absolute inset-0 bg-brand-dark/40 backdrop-blur-[4px] flex items-center justify-center">
-            <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
+            <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-gray-500/30 text-shadow ">
               Escolhido ♡
             </span>
           </div>
@@ -118,7 +118,7 @@ export default function PublicGiftCard({ gift, onClick }: PublicGiftCardProps) {
 
         {/* Choose button hint */}
         {!isFull && (
-          <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] font-light tracking-[0.1em] uppercase text-rose opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] font-light tracking-[0.1em] uppercase text-rose sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <svg
               width="11"
               height="11"

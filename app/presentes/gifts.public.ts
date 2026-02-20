@@ -35,17 +35,18 @@ export function formatDate(isoString: string): string {
 }
 
 export const CAT_FILTERS = [
-  { value: "todos",           label: "Todos",     emoji: "✨" },
-  { value: "Cozinha",         label: "Cozinha",   emoji: "🍳" },
-  { value: "Sala",            label: "Sala",      emoji: "🛋️" },
-  { value: "Quarto",          label: "Quarto",    emoji: "🛏️" },
-  { value: "Banheiro",        label: "Banheiro",  emoji: "🚿" },
-  { value: "Decoração",       label: "Decoração", emoji: "🌿" },
-  { value: "Eletrodoméstico", label: "Eletro",    emoji: "⚡" },
+  { value: "todos", label: "Todos", emoji: "✨" },
+  { value: "Cozinha", label: "Cozinha", emoji: "🍳" },
+  { value: "Sala", label: "Sala", emoji: "🛋️" },
+  { value: "Quarto", label: "Quarto", emoji: "🛏️" },
+  { value: "Banheiro", label: "Banheiro", emoji: "🚿" },
+  { value: "Decoração", label: "Decoração", emoji: "🌿" },
+  { value: "Cartão de Presente", label: "Cartão de Presente", emoji: "🎁" },
+  { value: "Eletrodoméstico", label: "Eletro", emoji: "⚡" },
 ];
 
 export const STATUS_FILTERS = [
-  { value: "todos",      label: "Todos"       },
+  { value: "todos", label: "Todos" },
   { value: "disponivel", label: "Disponíveis" },
-  { value: "doado",      label: "Escolhidos"  },
+  { value: "doado", label: "Escolhidos" },
 ];

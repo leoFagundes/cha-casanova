@@ -238,7 +238,7 @@ export default function EditModal({ gift, onClose, onSave }: EditModalProps) {
                   prioridade: prio,
                   contributions: gift.contributions || [],
                   taken: gift.taken ?? 0,
-                  imageUrl: gift.imageUrl || "",
+                  imageUrl: imageUrl || "",
                 });
               }}
               className="inline-flex items-center gap-2 bg-terracotta text-white text-[0.75rem] font-medium tracking-[0.14em] uppercase px-6 py-3 rounded-full hover:bg-deep-rose transition-all hover:-translate-y-0.5 shadow-[0_6px_18px_rgba(139,74,53,0.28)]"

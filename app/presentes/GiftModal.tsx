@@ -37,6 +37,10 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   const [checkState, setCheckState] = useState<
     "idle" | "checking" | "approved" | "pending" | "error"
   >("idle");
+  const [deliveryMethod, setDeliveryMethod] = useState<
+    "pix_card" | "in_person"
+  >("pix_card");
+  const [isSubmittingInPerson, setIsSubmittingInPerson] = useState(false);
 
   // Polling automático a cada 3s enquanto aguarda pagamento Pix
   useEffect(() => {
@@ -62,6 +66,8 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
       setPaymentApproved(false);
       setCopied(false);
       setCheckState("idle");
+      setDeliveryMethod("pix_card");
+      setIsSubmittingInPerson(false);
     }
   }, [gift]);
 
@@ -184,6 +190,39 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     setStep("success");
   }
 
+  // ── Entrega em mãos: salva direto no Firebase sem pagamento ──────────────────
+  async function handleInPerson() {
+    let hasError = false;
+    if (!guestName.trim()) {
+      setNameErr(true);
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setIsSubmittingInPerson(true);
+    try {
+      const res = await fetch("/api/gifts/contribute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          giftId: gift!.id,
+          name: guestName.trim(),
+          email: guestEmail.trim(),
+          message: message.trim(),
+          paymentMethod: "in_person",
+        }),
+      });
+      if (!res.ok) throw new Error("Erro ao registrar");
+      onChoose(gift!.id, guestName, message);
+      setStep("success");
+    } catch (err) {
+      setPaymentError("Não foi possível registrar. Tente novamente.");
+      console.error(err);
+    } finally {
+      setIsSubmittingInPerson(false);
+    }
+  }
+
   const inputCls =
     "w-full bg-cream border border-blush/60 rounded-xl px-4 py-3 text-[0.9rem] font-light text-brand-dark placeholder:text-brand-text-light/40 focus:outline-none focus:border-rose focus:ring-2 focus:ring-rose/12 transition-all font-jost";
 
@@ -217,12 +256,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
         {step === "detail" && (
           <>
             {/* Hero: imagem real ou emoji */}
-            <div className="relative w-full aspect-[16/8] overflow-hidden">
+            <div className="relative w-full aspect-[16/8] bg-white overflow-hidden">
               {gift.imageUrl ? (
                 <img
                   src={gift.imageUrl}
                   alt={gift.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gold-light via-blush to-rose/40 flex items-center justify-center">
@@ -239,12 +278,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
               {isFull && (
                 <div className="absolute inset-0 bg-brand-dark/40 backdrop-blur-[4px] flex items-center justify-center">
-                  <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
+                  <span className="font-cormorant italic text-white text-xl font-light border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-gray-500/30 text-shadow">
                     Item já foi Escolhido ♡
                   </span>
                 </div>
               )}
-              <span className="absolute bottom-4 left-4 text-[0.68rem] font-light text-white tracking-[0.16em] uppercase  border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-terracotta/30">
+              <span className="absolute bottom-4 left-4 text-[0.68rem] font-light text-white tracking-[0.16em] uppercase  border border-white/40 px-5 py-1.5 rounded-full backdrop-blur-sm bg-gray-500/30 text-shadow">
                 {gift.emoji} {gift.cat}
               </span>
             </div>
@@ -415,9 +454,48 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             <h2 className="font-cormorant text-[2rem] font-light text-brand-dark mb-1">
               Que presente <em className="italic text-rose">lindo!</em>
             </h2>
-            <p className="text-[0.85rem] font-light text-brand-text-light mb-7 leading-relaxed">
-              Deixe seus dados e uma mensagem para o casal antes de pagar.
+            <p className="text-[0.85rem] font-light text-brand-text-light mb-5 leading-relaxed">
+              Deixe seus dados e uma mensagem para o casal.
             </p>
+
+            {/* ── Seletor de método de entrega ── */}
+            <div className="grid grid-cols-2 gap-3 mb-7">
+              <button
+                onClick={() => setDeliveryMethod("pix_card")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                  deliveryMethod === "pix_card"
+                    ? "border-terracotta bg-terracotta/6"
+                    : "border-blush/40 bg-cream hover:border-rose/40"
+                }`}
+              >
+                <span className="text-2xl">💳</span>
+                <span className="text-[0.72rem] font-medium tracking-[0.08em] uppercase text-brand-dark">
+                  Pix ou Cartão
+                </span>
+                <span className="text-[0.65rem] font-light text-brand-text-light text-center">
+                  Pagamento online seguro
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setDeliveryMethod("in_person");
+                  setEmailErr(false);
+                }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                  deliveryMethod === "in_person"
+                    ? "border-sage bg-sage/10"
+                    : "border-blush/40 bg-cream hover:border-sage/40"
+                }`}
+              >
+                <span className="text-2xl">🤝</span>
+                <span className="text-[0.72rem] font-medium tracking-[0.08em] uppercase text-brand-dark">
+                  Entregar em mãos
+                </span>
+                <span className="text-[0.65rem] font-light text-brand-text-light text-center">
+                  Combinar com o casal
+                </span>
+              </button>
+            </div>
 
             <div className="flex items-center gap-4 p-4 bg-cream rounded-2xl mb-7 border border-blush/30">
               <span className="text-3xl">{gift.emoji}</span>
@@ -455,7 +533,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
 
               <div>
                 <label className="block text-[0.72rem] font-light tracking-[0.14em] uppercase text-brand-text-light mb-1.5">
-                  Seu e-mail <span className="text-rose">*</span>
+                  Seu e-mail{" "}
+                  {deliveryMethod === "pix_card" ? (
+                    <span className="text-rose">*</span>
+                  ) : (
+                    <span className="text-brand-text-light/40">(opcional)</span>
+                  )}
                 </label>
                 <input
                   type="email"
@@ -472,9 +555,11 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                     Por favor, informe um e-mail válido.
                   </p>
                 )}
-                <p className="text-[0.7rem] text-brand-text-light/60 mt-1">
-                  Necessário para confirmação do pagamento
-                </p>
+                {deliveryMethod === "pix_card" && (
+                  <p className="text-[0.7rem] text-brand-text-light/60 mt-1">
+                    Necessário para confirmação do pagamento
+                  </p>
+                )}
               </div>
 
               <div>
@@ -502,19 +587,32 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
             <div className="flex gap-3 mt-7">
               <button
                 onClick={() => setStep("detail")}
-                className="text-[0.78rem] font-light tracking-[0.14em] uppercase px-5 py-3.5 rounded-full border border-blush text-brand-text-light hover:border-rose hover:text-rose transition-all"
+                className="sm:text-[0.78rem] text-[0.6rem] font-light tracking-[0.14em] uppercase px-5 py-3.5 rounded-full border border-blush text-brand-text-light hover:border-rose hover:text-rose transition-all"
               >
                 Cancelar
               </button>
-              <button
-                onClick={handleGoToPayment}
-                disabled={isCreatingPref}
-                className="flex-1 flex items-center justify-center gap-2 bg-terracotta text-white text-[0.78rem] font-medium tracking-[0.14em] uppercase py-3.5 rounded-full hover:bg-rose-deep transition-all hover:-translate-y-0.5 shadow-[0_6px_22px_rgba(139,74,53,0.28)] disabled:opacity-60"
-              >
-                {isCreatingPref
-                  ? "Preparando pagamento…"
-                  : "Ir para o pagamento →"}
-              </button>
+
+              {deliveryMethod === "pix_card" ? (
+                <button
+                  onClick={handleGoToPayment}
+                  disabled={isCreatingPref}
+                  className="flex-1 flex items-center justify-center gap-2 bg-terracotta text-white sm:text-[0.78rem] text-[0.6rem] font-medium tracking-[0.14em] uppercase py-3.5 rounded-full hover:bg-rose-deep transition-all hover:-translate-y-0.5 shadow-[0_6px_22px_rgba(139,74,53,0.28)] disabled:opacity-60"
+                >
+                  {isCreatingPref
+                    ? "Preparando pagamento…"
+                    : "Ir para o pagamento →"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleInPerson}
+                  disabled={isSubmittingInPerson}
+                  className="flex-1 flex items-center justify-center gap-2 bg-sage text-white sm:text-[0.78rem] text-[0.6rem] font-medium tracking-[0.14em] uppercase py-3.5 rounded-full hover:opacity-90 transition-all hover:-translate-y-0.5 shadow-[0_6px_22px_rgba(138,158,137,0.35)] disabled:opacity-60"
+                >
+                  {isSubmittingInPerson
+                    ? "Registrando…"
+                    : "Confirmar presente 🤝"}
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -716,9 +814,10 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               Presente <em className="italic text-rose">confirmado!</em>
             </h2>
             <p className="text-[0.88rem] font-light text-brand-text-light leading-relaxed max-w-sm mb-2">
-              <span className="font-medium text-brand-dark">{guestName}</span>,
-              seu pagamento foi aprovado e o presente foi registrado. Natália
-              &amp; Leonardo vão adorar!
+              <span className="font-medium text-brand-dark">{guestName}</span>,{" "}
+              {deliveryMethod === "in_person"
+                ? "seu presente foi registrado! Natália & Leonardo ficarão felizes. Não esqueça de combiná-lo pessoalmente 🤝"
+                : "seu pagamento foi aprovado e o presente foi registrado. Natália & Leonardo vão adorar!"}
             </p>
             {message && (
               <div className="mt-4 w-full max-w-sm bg-cream rounded-2xl p-5 border border-blush/30 text-left">

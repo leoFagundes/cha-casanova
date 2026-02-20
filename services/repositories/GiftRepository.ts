@@ -102,9 +102,24 @@ class GiftRepository {
     try {
       const docRef = doc(db, this.collectionName, giftId);
 
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        const existing: GiftContribution[] = data.contributions ?? [];
+        const alreadySaved = existing.some(
+          (c) => c.paymentId === contribution.paymentId,
+        );
+        if (alreadySaved) {
+          console.log(
+            "Contribution já existe, ignorando:",
+            contribution.paymentId,
+          );
+          return true;
+        }
+      }
+
       await updateDoc(docRef, {
         contributions: arrayUnion(contribution),
-
         taken: increment(1),
       });
 

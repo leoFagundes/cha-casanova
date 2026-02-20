@@ -13,6 +13,7 @@ type Category =
   | "banheiro"
   | "decoracao"
   | "eletrodomestico"
+  | "Cartão de Presente"
   | "outro";
 
 const CATEGORIES: { value: Category; label: string; emoji: string }[] = [
@@ -22,6 +23,7 @@ const CATEGORIES: { value: Category; label: string; emoji: string }[] = [
   { value: "banheiro", label: "Banheiro", emoji: "🚿" },
   { value: "decoracao", label: "Decoração", emoji: "🌿" },
   { value: "eletrodomestico", label: "Eletrodoméstico", emoji: "⚡" },
+  { value: "Cartão de Presente", label: "Cartão de Presente", emoji: "🎁" },
   { value: "outro", label: "Outro", emoji: "✨" },
 ];
 

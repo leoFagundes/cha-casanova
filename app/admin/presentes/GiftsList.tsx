@@ -99,21 +99,192 @@ export default function GiftsList() {
     CATEGORIES.map((c) => [c.value, c.emoji]),
   );
 
-  if (loading) {
-    return (
-      <div className="text-center py-20">
-        <div className="text-4xl animate-pulse mb-4">🎁</div>
-        <p className="text-brand-text-light font-light">
-          Carregando presentes...
-        </p>
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Page heading */}
       <div className="flex items-end justify-between gap-4 mb-8 flex-wrap">
+        {loading && (
+          <div className="fixed w-screen h-screen top-0 left-0 flex flex-col gap-4 items-center justify-center z-[90] bg-cream">
+            <svg
+              viewBox="0 0 200 200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className=" relative z-10 sm:scale-50"
+              style={{
+                filter: "drop-shadow(0 8px 20px rgba(139,74,53,0.25))",
+              }}
+            >
+              {/* Shadow */}
+              <ellipse
+                className="pot-shadow-el"
+                cx="100"
+                cy="147"
+                rx="48"
+                ry="8"
+                fill="rgba(139,74,53,0.18)"
+              />
+
+              {/* ── Pot body ── */}
+              <g className="pot-body-group">
+                <rect
+                  x="55"
+                  y="90"
+                  width="90"
+                  height="44"
+                  rx="8"
+                  fill="#c9866d"
+                />
+                {/* Handles */}
+                <rect
+                  x="43"
+                  y="88"
+                  width="22"
+                  height="9"
+                  rx="4.5"
+                  fill="#8b4a35"
+                />
+                <rect
+                  x="135"
+                  y="88"
+                  width="22"
+                  height="9"
+                  rx="4.5"
+                  fill="#8b4a35"
+                />
+                {/* Handle highlights */}
+                <rect
+                  x="46"
+                  y="89.5"
+                  width="8"
+                  height="2.5"
+                  rx="1.25"
+                  fill="rgba(255,255,255,0.2)"
+                />
+                <rect
+                  x="138"
+                  y="89.5"
+                  width="8"
+                  height="2.5"
+                  rx="1.25"
+                  fill="rgba(255,255,255,0.2)"
+                />
+                {/* Body shine */}
+                <rect
+                  x="62"
+                  y="94"
+                  width="30"
+                  height="4"
+                  rx="2"
+                  fill="rgba(255,255,255,0.18)"
+                />
+                {/* Bottom */}
+                <ellipse cx="100" cy="134" rx="45" ry="8" fill="#a05c47" />
+              </g>
+
+              {/* ── Lid (wobbles independently) ── */}
+              <g className="pot-lid-group">
+                <ellipse cx="100" cy="90" rx="46" ry="13" fill="#e8c4b0" />
+                <ellipse
+                  cx="100"
+                  cy="89"
+                  rx="46"
+                  ry="13"
+                  fill="none"
+                  stroke="#c9a96e"
+                  strokeWidth="1"
+                  opacity="0.4"
+                />
+                {/* Lid highlight */}
+                <ellipse
+                  cx="88"
+                  cy="86"
+                  rx="16"
+                  ry="4"
+                  fill="rgba(255,255,255,0.25)"
+                />
+                {/* Knob base */}
+                <ellipse cx="100" cy="80" rx="7" ry="3" fill="#c9866d" />
+                {/* Knob bob */}
+                <g className="pot-knob">
+                  <ellipse cx="100" cy="77" rx="5" ry="5" fill="#a05c47" />
+                  <ellipse
+                    cx="98"
+                    cy="75.5"
+                    rx="2"
+                    ry="1.5"
+                    fill="rgba(255,255,255,0.3)"
+                  />
+                </g>
+              </g>
+
+              {/* ── Steam ── */}
+              <path
+                className="pot-steam-1"
+                d="M85 72 Q83 56 85 42 Q87 28 85 14"
+                stroke="#c9a96e"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                className="pot-steam-2"
+                d="M100 75 Q97 57 100 42 Q103 27 100 12"
+                stroke="#c9a96e"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                className="pot-steam-3"
+                d="M115 72 Q113 56 115 42 Q117 28 115 14"
+                stroke="#c9a96e"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+
+              {/* ── Hearts ── */}
+              <g className="pot-heart-r">
+                <path
+                  d="M165 50 C165 47 162 44 159 47 C156 44 153 47 153 50 C153 55 159 60 159 60 C159 60 165 55 165 50Z"
+                  fill="#c9866d"
+                />
+              </g>
+              <g className="pot-heart-l">
+                <path
+                  d="M49 59 C49 56.5 46.5 54 44 56.5 C41.5 54 39 56.5 39 59 C39 63 44 67 44 67 C44 67 49 63 49 59Z"
+                  fill="#8a9e89"
+                />
+              </g>
+
+              {/* ── Sparkles ── */}
+              <g className="pot-sparkle-1">
+                <path
+                  d="M170 80 L171.5 76 L173 80 L177 81.5 L173 83 L171.5 87 L170 83 L166 81.5Z"
+                  fill="#c9a96e"
+                  opacity="0.7"
+                />
+              </g>
+              <g className="pot-sparkle-2">
+                <path
+                  d="M30 75 L31 72 L32 75 L35 76 L32 77 L31 80 L30 77 L27 76Z"
+                  fill="#c9a96e"
+                  opacity="0.6"
+                />
+              </g>
+              <g className="pot-sparkle-3">
+                <path
+                  d="M155 35 L156 32.5 L157 35 L159.5 36 L157 37 L156 39.5 L155 37 L152.5 36Z"
+                  fill="#e8c4b0"
+                  opacity="0.8"
+                />
+              </g>
+            </svg>
+            <span className="absolute text-rose font-semibold italic text-xl translate-y-[160px]">
+              Carregando...
+            </span>
+          </div>
+        )}
         <div>
           <div className="flex items-center gap-3 mb-3">
             <span className="block w-7 h-px bg-gold" />
