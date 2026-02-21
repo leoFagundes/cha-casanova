@@ -52,28 +52,57 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   }, [paymentId, paymentApproved]);
 
   // Reset completo ao abrir um novo presente
-  useEffect(() => {
-    if (gift) {
-      paymentHandledRef.current = false;
+  const lastGiftIdRef = useRef<string | null>(null);
 
-      setStep("detail");
-      setGuestName("");
-      setGuestEmail("");
-      setMessage("");
-      setNameErr(false);
-      setEmailErr(false);
-      setPreferenceId(null);
-      setPaymentError(null);
-      setPixQrCode(null);
-      setPixCode(null);
-      setPaymentId(null);
-      setPaymentApproved(false);
-      setCopied(false);
-      setCheckState("idle");
-      setDeliveryMethod("pix_card");
-      setIsSubmittingInPerson(false);
-    }
-  }, [gift]);
+  useEffect(() => {
+    if (!gift) return;
+
+    // Só reseta se for OUTRO gift
+    if (lastGiftIdRef.current === gift.id) return;
+
+    lastGiftIdRef.current = gift.id;
+
+    paymentHandledRef.current = false;
+
+    setStep("detail");
+    setGuestName("");
+    setGuestEmail("");
+    setMessage("");
+    setNameErr(false);
+    setEmailErr(false);
+    setPreferenceId(null);
+    setPaymentError(null);
+    setPixQrCode(null);
+    setPixCode(null);
+    setPaymentId(null);
+    setPaymentApproved(false);
+    setCopied(false);
+    setCheckState("idle");
+    setDeliveryMethod("pix_card");
+    setIsSubmittingInPerson(false);
+  }, [gift?.id]);
+  // useEffect(() => {
+  //   if (gift) {
+  //     paymentHandledRef.current = false;
+
+  //     setStep("detail");
+  //     setGuestName("");
+  //     setGuestEmail("");
+  //     setMessage("");
+  //     setNameErr(false);
+  //     setEmailErr(false);
+  //     setPreferenceId(null);
+  //     setPaymentError(null);
+  //     setPixQrCode(null);
+  //     setPixCode(null);
+  //     setPaymentId(null);
+  //     setPaymentApproved(false);
+  //     setCopied(false);
+  //     setCheckState("idle");
+  //     setDeliveryMethod("pix_card");
+  //     setIsSubmittingInPerson(false);
+  //   }
+  // }, [gift]);
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
@@ -95,6 +124,49 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
   }
 
   // ── Valida o formulário e cria a preferência de pagamento ──────────────────
+  // async function handleGoToPayment() {
+  //   let hasError = false;
+  //   if (!guestName.trim()) {
+  //     setNameErr(true);
+  //     hasError = true;
+  //   }
+  //   if (!guestEmail.trim() || !isValidEmail(guestEmail)) {
+  //     setEmailErr(true);
+  //     hasError = true;
+  //   }
+  //   if (hasError) return;
+
+  //   if (!gift) return;
+
+  //   setIsCreatingPref(true);
+  //   try {
+  //     const res = await fetch("/api/payments/create-preference", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         giftId: gift.id,
+  //         giftName: gift.name,
+  //         price: gift.price,
+  //         guestName: guestName.trim(),
+  //         message: message.trim(),
+  //       }),
+  //     });
+
+  //     if (!res.ok) throw new Error("Erro ao criar pagamento");
+
+  //     const data = await res.json();
+  //     setPreferenceId(data.preferenceId);
+  //     setAmount(data.amount);
+  //     setStep("payment");
+  //   } catch (err) {
+  //     setPaymentError("Não foi possível iniciar o pagamento. Tente novamente.");
+  //     console.error(err);
+  //   } finally {
+  //     setIsCreatingPref(false);
+  //   }
+  // }
+
+  // No handleGoToPayment — REMOVA a chamada para /create-preference
   async function handleGoToPayment() {
     let hasError = false;
     if (!guestName.trim()) {
@@ -107,34 +179,12 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
     }
     if (hasError) return;
 
-    if (!gift) return;
-
-    setIsCreatingPref(true);
-    try {
-      const res = await fetch("/api/payments/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          giftId: gift.id,
-          giftName: gift.name,
-          price: gift.price,
-          guestName: guestName.trim(),
-          message: message.trim(),
-        }),
-      });
-
-      if (!res.ok) throw new Error("Erro ao criar pagamento");
-
-      const data = await res.json();
-      setPreferenceId(data.preferenceId);
-      setAmount(data.amount);
-      setStep("payment");
-    } catch (err) {
-      setPaymentError("Não foi possível iniciar o pagamento. Tente novamente.");
-      console.error(err);
-    } finally {
-      setIsCreatingPref(false);
-    }
+    // Converte "R$ 389,90" → 389.90
+    const parsed = parseFloat(
+      gift!.price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim(),
+    );
+    setAmount(parsed);
+    setStep("payment"); // vai direto, sem criar preferência
   }
 
   // ── Copia o código Pix para o clipboard ────────────────────────────────────
@@ -681,7 +731,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               <Payment
                 initialization={{
                   amount,
-                  preferenceId: preferenceId!,
+                  // preferenceId: preferenceId!,
                   payer: { email: guestEmail },
                 }}
                 customization={{
@@ -693,6 +743,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
                     minInstallments: 1,
                     maxInstallments: 5,
                   },
+
                   visual: {
                     style: {
                       theme: "default",
@@ -844,7 +895,7 @@ export default function GiftModal({ gift, onClose, onChoose }: GiftModalProps) {
               onClick={onClose}
               className="mt-7 flex items-center justify-center gap-2 bg-terracotta text-white text-[0.78rem] font-medium tracking-[0.14em] uppercase px-8 py-3.5 rounded-full hover:bg-rose-deep transition-all shadow-[0_6px_22px_rgba(139,74,53,0.28)]"
             >
-              Ver outros presentes
+              Fechar
             </button>
           </div>
         )}

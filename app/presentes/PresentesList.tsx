@@ -23,6 +23,15 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Gift | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"none" | "asc" | "desc">("none");
+
+  function parsePrice(price: string): number {
+    return (
+      parseFloat(
+        price.replace("R$", "").replace(/\./g, "").replace(",", ".").trim(),
+      ) || 0
+    );
+  }
 
   const filtered = gifts.filter((g) => {
     const s = getStatus(g);
@@ -42,6 +51,16 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
 
   const available = gifts.filter((g) => getStatus(g) !== "doado").length;
   const chosen = gifts.filter((g) => getStatus(g) === "doado").length;
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortOrder === "asc") return parsePrice(a.price) - parsePrice(b.price);
+    if (sortOrder === "desc") return parsePrice(b.price) - parsePrice(a.price);
+
+    // Sem filtro ativo: cartões de presente sempre primeiro
+    const aIsCard = a.cat === "Cartão de Presente" ? -1 : 0;
+    const bIsCard = b.cat === "Cartão de Presente" ? -1 : 0;
+    return aIsCard - bIsCard;
+  });
 
   // Chamado pelo GiftModal após pagamento aprovado.
   // giftId agora é string (ID do Firestore).
@@ -136,6 +155,147 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
             {/* Divider */}
             <span className="w-px h-5 bg-blush/50" />
 
+            {/* Sort */}
+            <div className="flex gap-1.5 p-1 bg-warm-white rounded-full border border-blush/40">
+              <button
+                onClick={() =>
+                  setSortOrder(
+                    sortOrder === "asc"
+                      ? "desc"
+                      : sortOrder === "desc"
+                        ? "none"
+                        : "asc",
+                  )
+                }
+                className={`text-[0.7rem] font-light tracking-[0.08em] uppercase px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1 ${
+                  sortOrder !== "none"
+                    ? "bg-terracotta text-white shadow-sm"
+                    : "text-brand-text-light hover:text-rose"
+                }`}
+              >
+                Preço
+                {sortOrder === "asc" && (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    {/* Seta para cima (menor→maior): linha curta em cima, longa embaixo */}
+                    <line
+                      x1="1"
+                      y1="9.5"
+                      x2="11"
+                      y2="9.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="3"
+                      y1="6.5"
+                      x2="9"
+                      y2="6.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="5"
+                      y1="3.5"
+                      x2="7"
+                      y2="3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <polyline
+                      points="6,1.5 6,3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+                {sortOrder === "desc" && (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    {/* Seta para baixo (maior→menor): linha longa em cima, curta embaixo */}
+                    <line
+                      x1="1"
+                      y1="2.5"
+                      x2="11"
+                      y2="2.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="3"
+                      y1="5.5"
+                      x2="9"
+                      y2="5.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="5"
+                      y1="8.5"
+                      x2="7"
+                      y2="8.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    <polyline
+                      points="6,10.5 6,8.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+                {sortOrder === "none" && (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    {/* Neutro: duas setinhas opostas */}
+                    <line
+                      x1="2"
+                      y1="4"
+                      x2="10"
+                      y2="4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeOpacity="0.5"
+                    />
+                    <polyline
+                      points="4,6.5 2,4 4,1.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeOpacity="0.5"
+                      fill="none"
+                    />
+                    <line
+                      x1="10"
+                      y1="8"
+                      x2="2"
+                      y2="8"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeOpacity="0.5"
+                    />
+                    <polyline
+                      points="8,5.5 10,8 8,10.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeOpacity="0.5"
+                      fill="none"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
+
             {/* Category filters */}
             <div className="flex gap-1.5 flex-wrap">
               {CAT_FILTERS.map((f) => (
@@ -179,7 +339,7 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map((g) => (
+            {sorted.map((g) => (
               <PublicGiftCard
                 key={g.id}
                 gift={g}
