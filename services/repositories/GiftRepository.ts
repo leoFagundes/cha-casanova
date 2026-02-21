@@ -12,6 +12,8 @@ import {
   increment,
   serverTimestamp,
   onSnapshot,
+  limit,
+  where,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -88,6 +90,33 @@ class GiftRepository {
       console.error("Erro ao deletar presente:", error);
 
       return false;
+    }
+  }
+
+  /**
+   * Busca um presente pelo name
+   */
+  static async getByName(name: string): Promise<Gift | null> {
+    try {
+      const q = query(
+        collection(db, this.collectionName),
+        where("name", "==", name),
+        limit(1),
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) return null;
+
+      const docSnap = snapshot.docs[0];
+
+      return {
+        id: docSnap.id,
+        ...(docSnap.data() as Omit<Gift, "id">),
+      };
+    } catch (error) {
+      console.error("Erro ao buscar gift por name:", error);
+      return null;
     }
   }
 

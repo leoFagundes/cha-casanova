@@ -123,7 +123,7 @@ export default function InfoCards() {
             <ScrollReveal key={card.title} delay={0.1 + i * 0.12}>
               <button
                 onClick={() => handleClick(card.action)}
-                className="cursor-pointer relative bg-warm-white rounded-[20px] p-10 text-center border border-rose/10 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(74,48,40,0.1)] card-top-border group w-full"
+                className="h-full cursor-pointer relative bg-warm-white rounded-[20px] p-10 text-center border border-rose/10 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(74,48,40,0.1)] card-top-border group w-full"
               >
                 <div className="w-14 h-14 bg-gradient-to-br from-cream to-gold-light rounded-2xl grid place-items-center mx-auto mb-5 text-2xl">
                   {card.icon}

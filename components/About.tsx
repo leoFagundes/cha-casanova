@@ -64,14 +64,28 @@ export default function About() {
             <ScrollReveal delay={0.22}>
               <p className="text-[0.95rem] font-light leading-[1.9] text-text-light mb-5">
                 Natalia e Leonardo estão se mudando juntos pela primeira vez e
-                começando uma nova fase cheia de novidades, aprendizados e
-                desafios.
+                começando uma nova fase cheia de novidades e desafios.
               </p>
             </ScrollReveal>
 
-            <ScrollReveal delay={0.34}>
+            <ScrollReveal delay={0.28}>
+              <p className="text-[0.95rem] font-light leading-[1.9] text-text-light mb-5">
+                Todo mundo sabe que começar uma nova fase em um novo lar é algo
+                bem desafiador.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.32}>
+              <p className="text-[0.95rem] font-light leading-[1.9] text-text-light mb-5">
+                Por isso, decidimos organizar um almoço para celebrar nossa
+                mudança e ter essa ajuda das pessoas mais próximas.
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.38}>
               <p className="text-[0.95rem] font-light leading-[1.9] text-text-light">
-                Escolha um presente com amor e faça parte dessa nova etapa tão
+                Confirme sua presença no Whatsapp e , se possível, escolha um
+                presente com amor para fazer parte dessa nova etapa tão
                 especial. ♡
               </p>
             </ScrollReveal>

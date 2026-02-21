@@ -1,7 +1,15 @@
+"use client";
+
 import type { Gift } from "@/app/types";
 import { makeAvatar, formatDate } from "./gifts.public";
 
-export default function DonorsWall({ gifts }: { gifts: Gift[] }) {
+export default function DonorsWall({
+  gifts,
+  onClick,
+}: {
+  gifts: Gift[];
+  onClick: (name: string) => void;
+}) {
   // Achata contributions de todos os presentes em uma lista única
   const allDonors = gifts.flatMap((g) =>
     (g.contributions ?? []).map((c) => ({
@@ -36,8 +44,9 @@ export default function DonorsWall({ gifts }: { gifts: Gift[] }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {allDonors.map((d, i) => (
           <div
+            onClick={() => onClick(d.giftName)}
             key={i}
-            className={`relative bg-warm-white rounded-2xl p-5 ${d.paymentId === "in_person" && "pb-10"}  border border-blush/25 hover:border-rose/20 transition-all hover:shadow-[0_8px_30px_rgba(74,48,40,0.07)]`}
+            className={`cursor-pointer relative bg-warm-white rounded-2xl p-5 ${d.paymentId === "in_person" && "pb-10"}  border border-blush/25 hover:border-rose/20 transition-all hover:shadow-[0_8px_30px_rgba(74,48,40,0.07)]`}
           >
             {d.paymentId === "in_person" && (
               <div className="absolute bottom-2 right-3 text-xs italic p-1 border rounded-md bg-cream font-semibold text-rose">

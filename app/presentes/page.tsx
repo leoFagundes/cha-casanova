@@ -9,6 +9,13 @@ import { Gift } from "../types";
 export default function PresentesPage() {
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
@@ -392,6 +399,33 @@ export default function PresentesPage() {
         @keyframes sparkle { 0% { opacity: 0; transform: scale(0) rotate(0deg) } 50% { opacity: 1; transform: scale(1.3) rotate(20deg) } 100% { opacity: 0; transform: scale(0.5) rotate(40deg) } }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px) } to { opacity: 1; transform: translateX(-50%) translateY(0) } }
       `}</style>
+
+      {/* Botão scroll to top*/}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className={`fixed bottom-8 right-6 z-[100] w-11 h-11 rounded-full bg-warm-white border border-blush/40 shadow-[0_8px_28px_rgba(74,48,40,0.14)] flex items-center justify-center text-terracotta hover:bg-terracotta hover:text-white hover:border-terracotta hover:shadow-[0_8px_28px_rgba(139,74,53,0.3)] transition-all duration-300 hover:-translate-y-1 ${
+          showScrollTop
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
+        aria-label="Voltar ao topo"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M8 13V3"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M3.5 7L8 2.5L12.5 7"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
     </div>
   );
 }

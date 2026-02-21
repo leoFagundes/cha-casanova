@@ -6,6 +6,7 @@ import { CAT_FILTERS, STATUS_FILTERS, getStatus } from "./gifts.public";
 import PublicGiftCard from "./PublicGiftCard";
 import GiftModal from "./GiftModal";
 import DonorsWall from "./DonorsWall";
+import GiftRepository from "@/services/repositories/GiftRepository";
 
 interface PresentesListProps {
   initialGifts: Gift[];
@@ -350,7 +351,17 @@ export default function PresentesList({ initialGifts }: PresentesListProps) {
         )}
 
         {/* Donors wall */}
-        <DonorsWall gifts={gifts} />
+        <DonorsWall
+          gifts={gifts}
+          onClick={async (name) => {
+            try {
+              const currentGift = await GiftRepository.getByName(name);
+              setSelected(currentGift);
+            } catch (error) {
+              console.error(error);
+            }
+          }}
+        />
 
         {/* Bottom note */}
         <p className="text-center text-[0.72rem] font-light text-brand-text-light/50 mt-12 tracking-wide pb-8">
